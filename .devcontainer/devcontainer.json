@@ -5,10 +5,12 @@
     "remoteUser": "rstudio",
     "extensions": [
 		"REditorSupport.r",
-        "quarto.quarto"
+        "kylebarron.stata-enhanced",
+        "quarto.quarto",
+        "James-Yu.latex-workshop"
 	],
 	"forwardPorts": [8787],
-    "workspaceFolder": "/home/rstudio/work",
+    "workspaceFolder": "/home/rstudio/staggered_did_tutorial",
     "shutdownAction": "stopCompose",
     "settings": {
     }
