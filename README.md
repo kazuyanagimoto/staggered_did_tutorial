@@ -1,18 +1,20 @@
-# My Docker Template for R
+# Staggered DiD Tutorial
 
-## Quick Start
+## Quick Start (without Docker)
 1. Clone this repository
-1. Make sure you have `~/.renv`, `~/.TinyTeX`, and `~/.pip` folders in your HOST machine
-1. Open it in VSCode and add Remote-Containers Extension
-1. From command pallete, choose "open folder in container"
-1. Open `localhost:8787` in a browser
-1. Create a project for this projet directory (by default, choose `/home/rstudio/work`)
-1. RUN `renv::init()` in the R console
-1. RUN `pip install -r requirements.txt --user` for DVC install (if you have never used this template)
-1. Set up a [DVC](https://dvc.org/) environment
-    1. Prepare a folder in Google Drive (and copy the folder code)
-    1. Init DVC
-        ```{bash}
-        dvc init
-        dvc remote add --default myremote gdrive://GDRIVE_FOLDER_CODE
-        ```
+1. Open the local repository as an R project (`staggered_did_tutorial.Rproj`)
+1. RUN `renv::init()` in the R console to install packages
+
+
+## フォルダ構成
+
+**最終形**
+
+
+
+
+
+- Data: 再配布のライセンス?, CSVの方がR-friendly?
+- Docker関連: `.devcontainer/`, `docker-compose.yml`, `Dockerfile`
+
+## ワークフロー
