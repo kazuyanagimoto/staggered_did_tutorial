@@ -9,17 +9,15 @@ T <- 36 # 1980~2015
 df_ind <- tibble(
   id = 1:n_obs,
   ai = rnorm(n_obs, 0, 0.5),
-  group = sample(1:3, n_obs, replace = TRUE, prob = c(17/50, 18/50, 15/50))
+  group = sample(1:3, n_obs, replace = TRUE, prob = c(17/50, 18/50, 15/50)),
+  tr_time = recode(group, `1` = 1989, `2` = 1998, `3` = 2007)
 )
 
 data <- df_ind |>
  slice(rep(1:n(), each = T)) |>
  mutate(t = rep(1980:2015, time = n_obs),
         lt = rep(rnorm(T, 0, 0.5), time = n_obs),
-        is_treated = case_when(
-          group == 1 ~ t >= 1989,
-          group == 2 ~ t >= 1998,
-          group == 3 ~ t >= 2007),
+        is_treated = t >= tr_time,
         y = ai + lt + rnorm(n_obs * T, 0, 0.5) + case_when(
           group == 1 ~ rnorm(n_obs * T, 0.5, 0.2) * (t - 1989) * is_treated,
           group == 2 ~ rnorm(n_obs * T, 0.3, 0.2) * (t - 1998) * is_treated,
@@ -53,3 +51,7 @@ data |>
     plot.title.position = "plot")
 
 ggsave(here("output/r/simulation/1_gen_data/baker22_sim6.pdf"), width = 6, height = 6)
+
+
+## TWFE regression
+feols(y ~ is_treated | id + t, data = data, cluster = "id")

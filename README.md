@@ -16,5 +16,3 @@
 
 - Data: 再配布のライセンス?, CSVの方がR-friendly?
 - Docker関連: `.devcontainer/`, `docker-compose.yml`, `Dockerfile`
-
-## ワークフロー
