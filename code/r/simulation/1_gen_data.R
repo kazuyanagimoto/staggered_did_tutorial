@@ -21,7 +21,11 @@ data <- df_ind |>
         y = ai + lt + rnorm(n_obs * T, 0, 0.5) + case_when(
           group == 1 ~ rnorm(n_obs * T, 0.5, 0.2) * (t - 1989) * is_treated,
           group == 2 ~ rnorm(n_obs * T, 0.3, 0.2) * (t - 1998) * is_treated,
-          group == 3 ~ rnorm(n_obs * T, 0.1, 0.2) * (t - 2007) * is_treated))
+          group == 3 ~ rnorm(n_obs * T, 0.1, 0.2) * (t - 2007) * is_treated),
+        tr_time = case_when(
+          group == 1 ~ 1989,
+          group == 2 ~ 1998,
+          group == 3 ~ 2007,))
 
 save(data, file = here("output/r/simulation/1_gen_data/data.rds"))
 
