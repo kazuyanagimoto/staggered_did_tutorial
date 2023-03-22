@@ -202,7 +202,7 @@ event_plot, default_look stub_lag(Tp#) stub_lead(Tm#) together ///
 	graph_opt(xtitle("Months since the event") ytitle("Estimates")  ///
 	title("Callaway and Sant'Anna", size(medsmall) margin(b=3)) ///
 	xlabel(-12(6)18) name(cg2, replace)) 
-graph save cicala_g2_2, replace
+graph save cicala_g2, replace
 
 /*
 timer on 2
@@ -230,8 +230,8 @@ qui reg y i.year i.pca_id##i.month i.pca_id#c.log_load ///
 predict ydc, residual
 
 timer on 3
-did_multiplegt ydc pca_id time treat, robust_dynamic dynamic(24) placebo(24) ///
-	breps(50) seed(1) cluster(pca_modate) 
+did_multiplegt ydc pca_id time treat, robust_dynamic dynamic(18) placebo(12) ///
+	breps(50) seed(1) cluster(pca_modate) firstdiff_placebo weight(wgt)
 * Memo: Package allows for time-varying controls, but not factor variables.
 *       Hence, residualize manually.	
 timer off 3
@@ -251,7 +251,7 @@ use "cicala_alt.dta", clear
 
 timer on 4
 did_imputation y pca_id time tr_time [aweight=wgt], ///
-	horizon(0/18) fe(year pca_id#month) unitc(log_load) ///
+	horizon(0/18) fe(year month pca_id#month) unitc(log_load) ///
 	autosample pretrend(12)
 	* Full model get the error message: Could not run imputation 
 	* for some observations b/c some absorbed variables/FEs 
@@ -264,7 +264,7 @@ event_plot, default_look stub_lag(tau#) stub_lead(pre#) together ///
 	title("Borusyak, Jaravel, Spiess", size(medsmall) margin(b=3)) ///
 	xlabel(-12(6)18) ///
 	name(cg4, replace)) 
-graph save cicala_g4_2, replace
+graph save cicala_g4, replace
 	
 * (3-B) Gardner *
 use "cicala_alt.dta", clear
