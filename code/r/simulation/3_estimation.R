@@ -182,7 +182,8 @@ est_dcdh <- function() {
 est_bjs <- function() {
   data <- data |> rename(dep_var = y)
   mod <- didimputation::did_imputation(data = data,
-                                       yname = "dep_var",
+                                       yname = "dep_var", 
+                                       # ynameの引数にyという名前の変数を入れるとエラーになる
                                        gname = "tr_time",
                                        tname = "t",
                                        idname = "id",
