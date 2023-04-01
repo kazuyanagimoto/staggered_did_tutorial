@@ -1,4 +1,4 @@
-library(ggplot2)
+library(tidyverse)
 library(here)
 library(bacondecomp)
 library(fixest)
@@ -10,85 +10,64 @@ load(here("output/r/simulation/1_gen_data/data.rds"))
 df_bacon <- bacon(y ~ is_treated, data, "id", "t")
 
 ggplot(df_bacon) +
-  aes(x = weight, y = estimate, shape = factor(type)) +
-  geom_point() +
+  aes(x = weight, y = estimate, shape = type, color = type) +
+  geom_point(size = 2) +
   geom_hline(yintercept = 0) + 
-  theme_minimal() +
-  labs(x = "Weight", y = "Estimate", shape = "Type")+
-  theme(legend.title = element_blank())
+  theme_bw() +
+  labs(x = "Weight", y = "Estimate", shape = NULL, color = NULL) + 
+  theme(panel.grid = element_blank(),
+        legend.position = "bottom")
+
+ggsave(here("output/r/simulation/2_diagnosis/bacon_decomp.pdf"), width = 6, height = 4)
 
 ggsave(here("output/r/simulation/2_diagnosis/goodman_bacon.pdf"), width = 6, height = 6)
 
 # Jakiela Diagnosis (https://pjakiela.github.io/TWFE/)
 # Weight
-model_tr_resid = fixest::feglm(is_treated ~ 1 | id + t, data)
+model_tr_resid <- feglm(is_treated ~ 1 | id + t, data)
+model_y_resid <- feglm(y ~ 1 | id + t, data)
 
-data <- data |>
+df_jakiela <- data |>
   mutate(tr_resid = resid(model_tr_resid),
-         tr_resid2 = resid(model_tr_resid)^2,
-         denom = sum(tr_resid2),
-         w = tr_resid/denom)
+         y_resid = resid(model_y_resid))
 
-ggplot() + 
-  # Treatment observations
-  geom_point(data = data[data$t < data$tr_time,],
-             aes(x = t, y = group),
-             shape = 15,
-             size = 3,
-             color = "grey") +
-  # Positive weight
-  geom_point(data = data[data$t >= data$tr_time & data$tr_resid > 0,],
-             aes(x = t, y = group),
-             shape = 15,
-             size = 3,
-             color = "darkgreen") +
-  # Negative weight
-  geom_point(data = data[data$t >= data$tr_time & data$tr_resid < 0,],
-             aes(x = t, y = group),
-             shape = 15,
-             size = 3,
-             color = "maroon") +
-  scale_y_continuous(breaks = c(1, 2, 3),
-                     labels = c("Treat in 1989", "Treat in 1998", "Treat in 2007"),
-                     expand = expansion(mult = 0.3)) +
-  labs(x = NULL, y = NULL) +
-  scale_x_continuous(limits = c(1980, 2015), breaks = seq(1980, 2015, 5)) +
-  theme(aspect.ratio = 0.1,
-        panel.background = element_blank(),
-        axis.line = element_line(colour = "black"),
-        axis.text = element_text(size = 8),
-        axis.ticks = element_blank())
+df_jakiela |>
+  mutate(label_wgt = case_when(
+    t < tr_time ~ "Comparison observation",
+    t >= tr_time & tr_resid > 0 ~ "Treatment observations - positive weight",
+    t >= tr_time & tr_resid < 0 ~ "Treatment observations - negative weight"),
+    label_wgt = factor(label_wgt, levels = c(
+      "Comparison observation",
+      "Treatment observations - positive weight",
+      "Treatment observations - negative weight")),
+    label_grp = recode_factor(group,
+        `1` = "Treat in 1989",
+        `2` = "Treat in 1998",
+        `3` = "Treat in 2007")) |>
+  ggplot(aes(x = t, y = label_grp, color = label_wgt)) +
+  geom_point(size = 3, shape = "square") +
+  labs(x = NULL, y = NULL, color = NULL) +
+  scale_color_manual(values = c("grey", "darkgreen", "maroon")) +
+  scale_x_continuous(breaks = seq(1980, 2015, 5)) +
+  theme_minimal() +
+  theme(legend.position = "bottom",
+        panel.grid = element_blank())
 
-ggsave(here("output/r/simulation/2_diagnosis/jakiela_weight.pdf"), width = 6, height = 6)
-
+ggsave(here("output/r/simulation/2_diagnosis/jakiela_weight.pdf"), width = 8, height = 3)
 
 # Heterogeneity
-model_y_resid = fixest::feglm(y ~ 1 | id + t, data)
 
-data <- data |>
-  mutate(y_resid = resid(model_y_resid))
 
-ggplot(data, aes(x = tr_resid, y = y_resid)) +
-  geom_point(aes(color = factor(is_treated)),
-             shape = 1, size = 2.5) +
-  geom_smooth(aes(color = factor(is_treated)),
-              method = "lm", se = FALSE,
-              linewidth = 1,
-              formula = y ~ x,
-              linetype = 1) +
+df_jakiela |>
+  ggplot(aes(x = tr_resid, y = y_resid, color = is_treated)) +
+  geom_point(shape = 1, size = 2.5, alpha = 0.2) +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE, linewidth = 1) +
   scale_color_manual(labels = c("Treatment observations", "Comparison observations"),
                      values = c("maroon", "darkgreen")) +
-  
-  xlab("D residual") +
-  ylab("Y residual") +
+  labs(x = "D residual", y = "Y residual", color = NULL) +
   theme_bw() +
-  theme(legend.position = "bottom", 
-        legend.box = "horizontal",
-        legend.title = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        axis.line = element_line(size = 0.5, colour = "black"),
-        axis.title = element_text(size = 12, face = "bold"),
-        axis.text = element_text(size = 10),
-        plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),
-        plot.margin = unit(c(1, 1, 1, 1), "cm"))
+  theme(panel.grid = element_blank(),
+        legend.background = element_rect(fill = "transparent"),
+        legend.position = c(0.8, 0.9))
+
+ggsave(here("output/r/simulation/2_diagnosis/jakiela_resid.pdf"), width = 6, height = 4)
