@@ -20,8 +20,6 @@ ggplot(df_bacon) +
 
 ggsave(here("output/r/simulation/2_diagnosis/bacon_decomp.pdf"), width = 6, height = 4)
 
-ggsave(here("output/r/simulation/2_diagnosis/goodman_bacon.pdf"), width = 6, height = 6)
-
 # Jakiela Diagnosis (https://pjakiela.github.io/TWFE/)
 # Weight
 model_tr_resid <- feglm(is_treated ~ 1 | id + t, data)
