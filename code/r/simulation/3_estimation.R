@@ -2,8 +2,8 @@ library(here)
 library(tidyverse)
 library(patchwork)
 library(microbenchmark)
-library(multcomp)
-library(broom)
+library(multcomp) # May not be necessary
+library(broom) # May not be necessary
 # Estimator
 library(fixest) # TWFE, Sun and Abraham, Wooldridge (Manual implementation)
 library(did) # Callaway-Sant'Anna
@@ -272,7 +272,6 @@ ggsave(here("output/r/simulation/3_estimation/alt_est2.pdf"), width = 6, height 
 
 mbm <- microbenchmark(
     sunab = est_sunab(),
-    wdrg = est_wdrg(),
     clsa = est_clsa(),
     bjs = est_bjs(),
     gard = est_gard(),
@@ -281,8 +280,27 @@ mbm <- microbenchmark(
 
 mbm_dcdh <- microbenchmark(
   dcdh = est_dcdh(),
-  times = 1
+  times = 10
 )
 
-# Yanagimoto will write here some exporting function of the benchmarks
+tb_mbm <- summary(mbm) |>
+  dplyr::select(method = expr, time = median, num_eval = neval) |>
+  mutate(time = time / 1000)
 
+tb_mbm_dcdh <- summary(mbm_dcdh) |>
+  dplyr::select(method = expr, time = median, num_eval = neval)
+
+tb_mbm |>
+  bind_rows(tb_mbm_dcdh) |>
+  mutate(method = recode_factor(method,
+    sunab = "Sun and Abraham",
+    clsa = "Callway and Sant'Anna",
+    dcdh = "de Chaisemartin and D'Haultfoeuille",
+    bjs = "Borusyak, Jaravel, Spiess",
+    gard = "Gardener"),
+    time = sprintf("%02.f:%02.f:%03.f",
+                   time %/% 60,
+                   round(time) %% 60,
+                   round(time * 1000) %% 1000)) |>
+  arrange(method) |>
+  write_tsv(here("output/r/simulation/3_estimation/bench_sim.tsv"))
