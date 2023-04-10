@@ -356,7 +356,7 @@ use "sim2_full.dta", clear
 timer on 5
 reg y i.id i.time if treat == 0, nocons
 predict yhat, residual
-reg yhat lead* lag*, nocons cluster(id)
+reg yhat lead* lag* if d89 != 1 | time < 2007, nocons cluster(id) /// drop negative weight group
 timer off 5
 
 event_plot, default_look stub_lag(lag#) stub_lead(lead#) together trimlead(5) trimlag(5) ///
