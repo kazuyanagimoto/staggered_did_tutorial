@@ -97,18 +97,18 @@ twoway line L1event* rel_time, xline(1, lp(dash) lw(thin) lc(black)) ///
 * (1-C) Wooldridge *
 use "output/stata/simulation/3_estimation/sim2_full.dta", clear
 
-forvalues g = 2/3 {
+forvalues g = 1/2 {
 	forvalues l = 1/27 {
 	gen lead`l'_g`g' = lead`l'*(group == `g')
 	}
 }
-forvalues g = 2/3 {
+forvalues g = 1/2 {
 	forvalues l = 0/27 {
 	gen lag`l'_g`g' = lag`l'*(group == `g')
 	}
 }
 
-reghdfe y lag* lead*, a(time group) cluster(id)
+reghdfe y lag*_* lead*_*, a(time group) cluster(id)
 
 /*
 lincom (lag0 + lag0_g2*(2/3) + lag0_g3*(1/3))
@@ -124,24 +124,24 @@ gen beta = .
 gen var = .
 
 forvalues i = 0/5 {
-	reghdfe y lag* lead*, a(time group) cluster(id)
-	margins, expression(_b[lag`i']+_b[lag`i'_g2]*(2/3)+_b[lag`i'_g3]*(1/3)) post
+	reghdfe y lag*_* lead*_*, a(time group) cluster(id)
+	margins, expression((_b[lag`i'_g1]+_b[lag`i'_g2])/2) post
 	mat blag`i' = e(b)
 	mat vlag`i' = e(V)
 	replace beta = blag`i'[1,1] if grid == `i'+6
 	replace var = vlag`i'[1,1] if grid == `i'+6
 }
 forvalues i = 1/5 {
-	reghdfe y lag* lead*, a(time group) cluster(id)
-	margins, expression(_b[lead`i']+_b[lead`i'_g2]*(2/3)+_b[lead`i'_g3]*(1/3)) post
+	reghdfe y lag*_* lead*_*, a(time group) cluster(id)
+	margins, expression(_b[lead`i'_g1]+_b[lead`i'_g2]/2) post
 	mat blead`i' = e(b)
 	mat vlead`i' = e(V)
 	replace beta = blead`i'[1,1] if grid == 6-`i'
 	replace var = vlead`i'[1,1] if grid == 6-`i'
 }
 
-gen lower = beta - 0.96*sqrt(var) in 1/11
-gen upper = beta + 0.96*sqrt(var) in 1/11
+gen lower = beta - 1.96*sqrt(var) in 1/11
+gen upper = beta + 1.96*sqrt(var) in 1/11
 replace grid = grid - 6
 tw (rarea upper lower grid, lc(navy) fc(navy) fi(30)) ///
 (connected beta grid, lc(navy) mc(navy)) ///
