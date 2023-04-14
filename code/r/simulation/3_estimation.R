@@ -69,7 +69,7 @@ est_wdrg <- function() {
 
   wtb <- tibble(
     group = factor(1:2),
-    wgt = c(mean(data$group == 1), mean(data$group == 2))
+    wgt = c(1/2, 1/2)
   )
 
   tibble(name = rownames(ctb),

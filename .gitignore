@@ -40,8 +40,10 @@ vignettes/*.pdf
 
 # data
 data/*.dta
+output/stata/**/*.dta
 output/r/emp_application/1_overview/data.rds
 
 
 # other
 .vscode/
+.DS_Store
