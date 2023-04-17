@@ -2,8 +2,7 @@ library(here)
 library(tidyverse)
 library(patchwork)
 library(microbenchmark)
-library(multcomp) # May not be necessary
-library(broom) # May not be necessary
+
 # Estimator
 library(fixest) # TWFE, Sun and Abraham, Wooldridge (Manual implementation)
 library(did) # Callaway-Sant'Anna
@@ -85,73 +84,6 @@ est_wdrg <- function() {
      summarize(coef = weighted.mean(coef, wgt),
                se = sqrt(weighted.mean(se^2, wgt^2)))
 
-}
-
-
-est_wdrg_original <- function() {
-
-  data_wdrg <- data
-
-  for (i in 0:27) {
-    v_name <- paste("lag", i, sep ='')
-    data_wdrg <- data_wdrg |>
-      mutate(!!v_name := ifelse(rel_time == i, 1, 0))
-  }
-
-  for (i in 1:27) {
-    v_name <- paste("lead", i, sep ='')
-    data_wdrg <- data_wdrg |>
-      mutate(!!v_name := ifelse(rel_time == -i, 1, 0))
-  }
-
-  data_wdrg <- data_wdrg |>
-    mutate(lead1 = 0)
-
-
-  data_wdrg <- data_wdrg |> 
-    mutate(across(lead1:lead27, list( g2 = \(x) x * (group == 2))),
-           across(lead1:lead27, list( g3 = \(x) x * (group == 3))),
-           across(lag0:lag27, list( g2 = \(x) x * (group == 2))),
-           across(lag0:lag27, list( g3 = \(x) x * (group == 3))))
-  xvars_lag <- names(data)[grep("^lag", names(data))]
-  xvars_lead <- names(data)[grep("^lead", names(data))]
-  formula <- as.formula(paste0("y", " ~ ", paste(xvars_lag, collapse = "+"), " + ",
-                               paste(xvars_lead, collapse = "+"), " | t + group"))
-  mod <- feols(formula, data = data_wdrg, cluster = "id")
-  
-  list <- list()
-  for (i in 0:5) {
-    coefs <- mod$coefficient
-    var1 <- ifelse(length(grep(paste0("^lag", i, "TRUE"), names(coefs))) != 0,
-                   names(coefs)[grep(paste0("^lag", i, "TRUE"), names(coefs))], 0)
-    var2 <- ifelse(length(grep(paste0("^lag", i, "_g2"), names(coefs))) != 0,
-                   names(coefs)[grep(paste0("^lag", i, "_g2"), names(coefs))], 0)
-    var3 <- ifelse(length(grep(paste0("^lag", i, "_g3"), names(coefs))) != 0,
-                   names(coefs)[grep(paste0("^lag", i, "_g3"), names(coefs))], 0)
-    hypo <- paste0(var1, " + ", var2, " * (2/3) + ", var3, " * (1/3) = 0")
-    mod.lh <- glht(mod, linfct = c(hypo))
-    mod.conf <- confint(mod.lh)
-    list <- c(list, mod.conf$confint, as.integer(i))
-  }
-  
-  list <- c(list, 0, 0, 0, as.integer(-1))
-  for (i in 2:5) {
-    coefs <- mod$coefficient
-    var1 <- ifelse(length(grep(paste0("^lead", i, "TRUE"), names(coefs))) != 0,
-                   names(coefs)[grep(paste0("^lead", i, "TRUE"), names(coefs))], 0)
-    var2 <- ifelse(length(grep(paste0("^lead", i, "_g2"), names(coefs))) != 0,
-                   names(coefs)[grep(paste0("^lead", i, "_g2"), names(coefs))], 0)
-    var3 <- ifelse(length(grep(paste0("^lead", i, "_g3"), names(coefs))) != 0,
-                   names(coefs)[grep(paste0("^lead", i, "_g3"), names(coefs))], 0)
-    hypo <- paste0(var1, " + ", var2, " * (2/3) + ", var3, " * (1/3) = 0")
-    mod.lh <- glht(mod, linfct = c(hypo))
-    mod.conf <- confint(mod.lh)
-    list <- c(list, mod.conf$confint, as.integer(-i))
-  }
-  
-  unlist(list) |> matrix(ncol = 4, byrow = T) |> data.frame() |>
-      rename(coef = X1, rci = X2, lci = X3, rel_time = X4) |>
-      mutate(val_true = if_else(between(rel_time, -5, 0), 0, rel_time * 0.4))
 }
 
 
@@ -262,9 +194,11 @@ p7 <- est_bjs() |> plot_did("Borusyak, Jaravel, Spiess")
 p8 <- est_gard() |> plot_did("Gardner")
 
 (p1 + p2) / (p3 + p4)
-ggsave(here("output/r/simulation/3_estimation/alt_est1.pdf"), width = 6, height = 6)
+ggsave(here("output/r/simulation/3_estimation/alt_est1.pdf"), width = 6, height = 5)
+ggsave(here("output/r/simulation/3_estimation/alt_est1.png"), width = 6, height = 5)
 (p5 + p6) / (p7 + p8)
-ggsave(here("output/r/simulation/3_estimation/alt_est2.pdf"), width = 6, height = 6)
+ggsave(here("output/r/simulation/3_estimation/alt_est2.pdf"), width = 6, height = 5)
+ggsave(here("output/r/simulation/3_estimation/alt_est2.png"), width = 6, height = 5)
 
 
 
@@ -297,7 +231,7 @@ tb_mbm |>
     clsa = "Callway and Sant'Anna",
     dcdh = "de Chaisemartin and D'Haultfoeuille",
     bjs = "Borusyak, Jaravel, Spiess",
-    gard = "Gardener"),
+    gard = "Gardner"),
     time = sprintf("%02.f:%02.f:%03.f",
                    time %/% 60,
                    round(time) %% 60,

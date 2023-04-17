@@ -25,12 +25,8 @@ clear matrix
 set maxvar 10000
 set matsize 10000
 
-* Directory
-global RootDir = "/Users/umetanihayato/git/staggered_did_tutorial"
-
 /***** I. Overview of the Data *****/
 
-cd "$RootDir"
 use "data/cicala_aer_2022_ready.dta", clear
 
 gen y = log_ideal_trade_surplus /* Gains from trade in log */
@@ -58,6 +54,7 @@ tw line mkt_frac time, ytitle("Fraction of Market Dispatch", margin(r=2)) ///
     xlabel(468 "99" 480 "00" 492 "01" 504 "02" 516 "03" ///
     528 "04" 540 "05" 552 "06" 564 "07" 576 "08" 588 "09" ///
     600 "10" 612 "11" 624 "12" 636 "13") xtitle(" ") 
-graph save output/stata/emp_application/1_overview/dispatch_timing, replace
+graph export output/stata/emp_application/1_overview/dispatch_timing.pdf, replace
+graph export output/stata/emp_application/1_overview/dispatch_timing.png, replace
 
 save output/stata/emp_application/1_overview/cicala.dta, replace

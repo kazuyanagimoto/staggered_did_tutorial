@@ -36,7 +36,7 @@ df_jakiela |>
   theme(legend.position = "bottom",
         panel.grid = element_blank())
 
-ggsave(here("output/r/emp_application/2_diagnosis/jakiela_weight.png"), width = 6, height = 6)
+ggsave(here("output/r/emp_application/2_diagnosis/jakiela_weight.png"), width = 6, height = 4)
 
 # Heterogeneity
 

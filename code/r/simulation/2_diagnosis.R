@@ -19,6 +19,7 @@ ggplot(df_bacon) +
         legend.position = "bottom")
 
 ggsave(here("output/r/simulation/2_diagnosis/bacon_decomp.pdf"), width = 6, height = 4)
+ggsave(here("output/r/simulation/2_diagnosis/bacon_decomp.png"), width = 6, height = 4)
 
 # Jakiela Diagnosis (https://pjakiela.github.io/TWFE/)
 # Weight
@@ -52,6 +53,7 @@ df_jakiela |>
         panel.grid = element_blank())
 
 ggsave(here("output/r/simulation/2_diagnosis/jakiela_weight.pdf"), width = 8, height = 3)
+ggsave(here("output/r/simulation/2_diagnosis/jakiela_weight.png"), width = 8, height = 3)
 
 # Heterogeneity
 
@@ -69,3 +71,4 @@ df_jakiela |>
         legend.position = c(0.8, 0.9))
 
 ggsave(here("output/r/simulation/2_diagnosis/jakiela_resid.pdf"), width = 6, height = 4)
+ggsave(here("output/r/simulation/2_diagnosis/jakiela_resid.png"), width = 6, height = 4)

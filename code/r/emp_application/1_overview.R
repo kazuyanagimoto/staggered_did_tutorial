@@ -53,6 +53,7 @@ data |>
   theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank())
 
-ggsave(here("output/r/emp_application/1_overview/treate_timing.pdf"), width = 6, height = 6)
+ggsave(here("output/r/emp_application/1_overview/treate_timing.pdf"), width = 6, height = 4)
+ggsave(here("output/r/emp_application/1_overview/treate_timing.png"), width = 6, height = 4)
 
   

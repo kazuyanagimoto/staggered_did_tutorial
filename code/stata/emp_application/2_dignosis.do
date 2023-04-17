@@ -1,5 +1,3 @@
-global RootDir "path-to-local-directry"
-cd $RootDir
 use output/stata/emp_application/1_overview/cicala.dta, clear
 
 /***** II. Diagnosis *****/
@@ -46,7 +44,7 @@ tw (scatter group time if time < tr_time, ///
 	xtitle(" ") xlabel(468 "99" 480 "00" 492 "01" 504 "02" 516 "03" ///
 	528 "04" 540 "05" 552 "06" 564 "07" 576 "08" 588 "09" ///
 	600 "10" 612 "11" 624 "12" 636 "13", labsize(small))
-graph save output/stata/emp_application/2_diagnosis/jdiag_1, replace
+graph export output/stata/emp_application/2_dignosis/jdiag_1.png, replace
 
 table group, stat(count treat) stat(mean treat) stat(sd treat) 
 		
@@ -60,7 +58,7 @@ tw (scatter y_resid tr_resid if treat == 0, m(oh) mc(maroon%40)) ///
 	, xtitle("D residual") ytitle("Y residual") xlabel(-.5(.5).5) ///
 	legend(order(1 "Treatment observations" 2 "Comparison observations")) ///
 	legend(ring(0) pos(1) col(1) region(style(off))) 
-graph save output/stata/emp_application/2_diagnosis/jdiag_2, replace
+graph export output/stata/emp_application/2_dignosis/jdiag_2.png, replace
 
 * The following yield the same results *
 reg y_resid tr_resid, cluster(pca_modate)
