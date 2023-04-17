@@ -52,8 +52,5 @@ data |>
     legend.position = c(0.1, 0.9),
     plot.title.position = "plot")
 
-ggsave(here("output/r/simulation/1_gen_data/baker22_sim6.pdf"), width = 6, height = 6)
-
-
-## TWFE regression
-feols(y ~ is_treated | id + t, data = data, cluster = "id")
+ggsave(here("output/r/simulation/1_gen_data/baker22_sim6.pdf"), width = 6, height = 4)
+ggsave(here("output/r/simulation/1_gen_data/baker22_sim6.png"), width = 6, height = 4)

@@ -210,7 +210,6 @@ event_plot, default_look stub_lag(lag#) stub_lead(lead#) together trimlead(5) tr
 * Note 2: Runnding reghdfe y lead* lag* removes "correct" comparions due to multicoliniarity.
 
 * (1-B) Sun and Abraham *
-
 use "sim2_full.dta", clear
 
 timer clear

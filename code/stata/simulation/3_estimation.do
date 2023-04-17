@@ -1,6 +1,3 @@
-global RootDir "path-to-local-directry"
-cd $RootDir
-
 use output/stata/simulation/1_gen_data/data.dta, clear
 
 /***** III. Alternative Estimators *****/
@@ -232,6 +229,7 @@ forvalues i = 1/5 {
 }
 graph combine g0 g1 g2 g3, rows(2) xsize(5.5)
 graph export output/stata/simulation/3_estimation/alt_est1.pdf, replace
+graph export output/stata/simulation/3_estimation/alt_est1.png, replace
 graph combine g4 g5 g6 g7, rows(2) xsize(5.5)
 graph export output/stata/simulation/3_estimation/alt_est2.pdf, replace
-
+graph export output/stata/simulation/3_estimation/alt_est2.png, replace

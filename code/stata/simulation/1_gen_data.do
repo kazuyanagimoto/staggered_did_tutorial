@@ -1,6 +1,3 @@
-global RootDir "path-to-local-directry"
-cd $RootDir
-
 /***** I. Generating Data *****/
 
 *** Case 2. Heterogeneous, Dynamic Effect ***
@@ -67,6 +64,7 @@ title("Case 2. Heterogeneous/Dynamic Effect""(Simulation 6 in Baker {it:et al.})
 size(medsmall) margin(b=3)) yscale(r(0 20)) ylabel(-5(5)20) xtitle(" ") name(g2, replace)
 
 graph export output/stata/simulation/1_gen_data/baker22_sim6.pdf, replace
+graph export output/stata/simulation/1_gen_data/baker22_sim6.png, replace
 
 * TWFE regression *
 reghdfe y treat, absorb(id time) cl(id)

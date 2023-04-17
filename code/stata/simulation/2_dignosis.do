@@ -1,6 +1,3 @@
-global RootDir "path-to-local-directry"
-cd $RootDir
-
 use output/stata/simulation/1_gen_data/data.dta, clear
 
 /***** II. Diagnosis *****/
@@ -9,6 +6,8 @@ use output/stata/simulation/1_gen_data/data.dta, clear
 xtset id time
 bacondecomp y treat, msymbols(oh t) /* Current version, aggregates early vs. late */
 graph export output/stata/simulation/2_diagnosis/bacon_decomp.pdf, replace
+graph export output/stata/simulation/2_diagnosis/bacon_decomp.png, replace
+
 * ddtiming y treat, i(id) t(time) savedata(nfd2) replace /* Old version, each timing comparison */
 * do "sim_bacondecomp.do"
 
@@ -35,7 +34,8 @@ tw (scatter group time if time < tr_time, ms(s) mlc(gs10) mfc(gs14) msize(vlarge
 		label(2 "Treatment observations - positive weight") ///
 		label(1 "Comparison observations") size(small) col(1)) xtitle(" ") xlabel(1980(5)2015)
 
-graph export output/stata/simulation/2_diagnosis/jakiela_resid.pdf, replace
+graph export output/stata/simulation/2_diagnosis/jakiela_weight.pdf, replace
+graph export output/stata/simulation/2_diagnosis/jakiela_weight.png, replace
 
 *** Diagnosis (2): Heterogeneity ***
 qui: reg y i.time i.id
@@ -49,4 +49,5 @@ tw (scatter y_resid tr_resid if treat == 0, m(oh) mc(maroon%40)) ///
 legend(order(1 "Treatment observations" 2 "Comparison observations")) ///
 legend(ring(0) pos(1) col(1) region(style(off))) xsize(8.5)
 
-graph export output/stata/simulation/2_diagnosis/jakiela_weight.pdf, replace
+graph export output/stata/simulation/2_diagnosis/jakiela_resid.pdf, replace
+graph export output/stata/simulation/2_diagnosis/jakiela_resid.png, replace

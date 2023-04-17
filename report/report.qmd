@@ -1,0 +1,240 @@
+---
+title: "Report"
+author: Kazuharu Yanagimoto
+date: today
+execute:
+    echo: false
+    warning: false
+    message: false
+format:
+    html:
+        self-contained: true
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(gt)
+```
+
+
+# Replication
+
+## Simulation
+
+### 1. Generating Data
+
+::: {layout-ncol="2"}
+
+![Stata](/output/stata/simulation/1_gen_data/baker22_sim6.png)
+
+![R](/output/r/simulation/1_gen_data/baker22_sim6.png)
+
+:::
+
+
+### 2. Diagnosis
+
+#### @goodman-bacon2021
+
+::: {layout-ncol=2}
+
+![Stata](/output/stata/simulation/2_diagnosis/bacon_decomp.png)
+
+![R](/output/r/simulation/2_diagnosis/bacon_decomp.png)
+
+
+:::
+
+#### @jakiela2021
+
+::: {layout-ncol="2"}
+
+![Stata](/output/stata/simulation/2_diagnosis/jakiela_weight.png)
+
+![R](/output/r/simulation/2_diagnosis/jakiela_weight.png)
+
+:::
+
+::: {layout-ncol="2"}
+
+![Stata](/output/stata/simulation/2_diagnosis/jakiela_resid.png)
+
+![R](/output/r/simulation/2_diagnosis/jakiela_resid.png)
+
+:::
+
+
+### 3. Estimation Results
+
+::: {layout-ncol=2}
+![Stata](/output/stata/simulation/3_estimation/alt_est1.png)
+
+![R](/output/r/simulation/3_estimation/alt_est1.png)
+
+:::
+
+::: {layout-ncol=2}
+![Stata](/output/stata/simulation/3_estimation/alt_est2.png)
+
+![R](/output/r/simulation/3_estimation/alt_est2.png)
+
+:::
+
+
+## Application: Replication of @cicala2022
+
+### 1. Data Overview
+
+::: {layout-ncol="2"}
+
+![Stata](/output/stata/emp_application/1_overview/dispatch_timing.png)
+
+![R](/output/r/emp_application/1_overview/treate_timing.png)
+
+:::
+
+### 2. Diagnosis
+
+
+::: {layout-ncol="2"}
+
+
+![Stata](/output/stata/emp_application/2_dignosis/jdiag_1.png)
+
+![R](/output/r/emp_application/2_diagnosis/jakiela_weight.png)
+
+
+:::
+
+::: {layout-ncol="2"}
+
+
+![Stata](/output/stata/emp_application/2_dignosis/jdiag_2.png)
+
+![R](/output/r/emp_application/2_diagnosis/jakiela_resid.png)
+
+
+:::
+
+
+### 3. Estimation Results
+
+::: {layout-ncol="2"}
+
+![Stata](/output/stata/emp_application/3_estimation/alt_est1_slides.png)
+
+![R](/output/r/emp_application/3_estimation/alt_est1.png)
+
+:::
+
+::: {layout-ncol=2}
+
+![Stata](/output/stata/emp_application/3_estimation/alt_est2_slides.png)
+
+![R](/output/r/emp_application/3_estimation/alt_est2.png)
+
+:::
+
+# Discussion
+
+## Benchmark
+
+
+**Simulation**
+```{r}
+bench_sim <- read_tsv(here("output/r/simulation/3_estimation/bench_sim.tsv"),
+                      col_types = "cci")
+
+bench_sim |>
+  gt(rowname_col = "method") |>
+  cols_label(.list = list(time = "mm:ss:mmm", num_eval = "Num. Evaluation"))
+```
+
+
+**Application**
+```{r}
+bench_emp <- read_tsv(here("output/r/emp_application/3_estimation/bench_emp.tsv"),
+                      show_col_types = FALSE)
+
+bench_emp |>
+  gt(rowname_col = "method") |>
+  cols_label(.list = list(time = "hh:mm:ss", num_eval = "Num. Evaluation"))
+```
+
+
+
+- 固定効果入りの回帰分析のためのパッケージである Stata の`reghdfe` と R の `fixest` では数倍 ~ 数十倍の速度差がある. [fixest:Benchmark](https://lrberge.github.io/fixest/)
+- TWFEベースの手法 (@sun2021) や Imputationの手法 (@borusyak2022, @gardner2022) は `fixest` を利用できるため, Stataと比べてかなり早い
+- Rolling Method は基本的にRでループを回すのでかなり遅くなる. `Rcpp` などを用いればもう少し速く実装できそうだが (がそれはあまり行われなさそう)
+
+## Stata ↔ R
+
+### 推定値の違い
+
+Simulationの結果はほとんど同じ (おそらく Seed によるデータの差のみ).
+応用編の方では, 
+
+- Naive TWFEは完全に一致, Sun and Abraham もほとんど同じ (だが少し違う)
+- Callaway and Sant'Anna は -1でNormalizedされていないので要検証
+- dCDH と Borusyak et al. は似たような推定値だが同じオプションが選択できてないので, それが原因かもしれない
+- Gardnerはかなり違うので要検証
+
+### @dechaisemartin2022
+
+- Rパッケージはここ３年メンテナンスされてなく, Stataのパッケージに追いつけていない模様. [kylebutts/did2s#19](https://github.com/kylebutts/did2s/issues/19)
+- Stata の `did_multiplegt` の `firstdiff_placebo` と `weight ` オプションがない. また, Cicalaのreplicationで `cluster=pca_modate` を指定するとエラーが出る.
+
+### @gardner2022
+
+- `did2s::did2s` はLarge Matrixに対してAnalytical Standard Errorを計算できない. これはパッケージの仕様らしい. [kylebutts/did2s#12](https://github.com/kylebutts/did2s/issues/12)
+- ただし, `bootstrap=True` にしてもバグのようなエラーが出る. `feols` を用いて Stata と同じ実装をした.
+- Stataの推定値と大きく異なるので調べる必要がある
+
+
+## Stata のコードに関して
+
+### パッケージ
+
+- タイポ, 依存パッケージの不足などを修正 (`code/stata/setup.do`)
+- `ddtiming` がダウンロードできず. 現在 ssc に存在しない.
+
+### @goodman-bacon2021
+
+- 応用編の方で `xtset pca_id time` が "time repeated time values within panel" エラーを吐く
+
+### @wooldridge2021 の実装
+
+- よりシンプルな実装に変更 (`code/stata/simulation/3_estimation.do`)
+
+### @gardner2022 が Biased な推定値を出力する
+
+- Negative weight の問題というより, not-yet-treatedの場合の実装に気をつける必要がある.
+- $\tau_{18}, \dots, \tau_{25}$ に対する not-yet-treatedなサンプルが存在しないので, そもそも impute できない. 
+- 第二ステージで `d89 == 1 & time >= 2007` とサンプルを落とす必要がある
+- Rでは `did2s::did2s` を用いることで Unbiasedな推定値が得られている
+
+## その他
+
+- @cicala2022 のデータの二次配布のライセンスはどうなっているか
+- Dailyに変換するRコードは必要か
+- データ形式はCSVの方がRユーザーに優しいのではないか
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
