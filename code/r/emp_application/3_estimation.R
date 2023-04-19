@@ -57,25 +57,30 @@ est_clsa <- function() {
            pca_id_month = paste(pca_id, month))
 
   # Absorb FEs and time-varying Covariates a la Caetano et al. (2022)
-  mod_control <- feols(y ~ -1 | year + pca_id_month + pca_id[log_load],
+  mod_control <- feols(y ~ 0 | year + pca_id_month + pca_id[log_load],
                data = data_ca, subset =  ~ !is_treated)
 
   mod <- data_ca |>
     mutate(resid = y - predict(mod_control, data_ca)) |>
-    did::att_gt(yname = "resid",
-                     tname = "time",
-                     gname = "tr_time",
-                     panel = FALSE,
-                     clustervars = "pca_modate",
-                     weightsname = "wgt",
-                     control_group = "nevertreated",
-                     data = _) |>
+    att_gt(yname = "resid",
+           tname = "time",
+           gname = "tr_time",
+           panel = FALSE,
+           clustervars = "pca_modate",
+           weightsname = "wgt",
+           control_group = "nevertreated",
+           bstrap = TRUE,
+           biters = 50,
+           pl = TRUE,
+           cores = parallel::detectCores(),
+           data = _) |>
     aggte(type = "dynamic", na.rm = TRUE)
 
   tibble(rel_time = mod$egt,
          coef = mod$att.egt,
          se = mod$se.egt)
 }
+
 
 # (2-B) de Chaisemartin and D'Haultfoeuille
 
@@ -84,17 +89,17 @@ est_dcdh <- function() {
   data_dcdh <- data |> mutate(pca_id_month = paste(pca_id, month))
   mod <- feols(y ~ 0 | year + pca_id_month + pca_id[log_load],
                data = subset(data_dcdh, is_treated=="FALSE"))
-  data_dcdh$resid <- data_dcdh$y - predict(mod, data_dcdh)
 
-  mod <- DIDmultiplegt::did_multiplegt(df = data_dcdh,
-                                       Y = "resid",
-                                       G = "pca_id",
-                                       T = "time",
-                                       D = "is_treated",
-                                       dynamic = 18,
-                                       placebo = 12,
-                                       brep = 20,
-                                       parallel = TRUE)
+  mod <- data_dcdh |>
+    mutate(resid = y - predict(mod, data_dcdh)) |>
+    DIDmultiplegt::did_multiplegt(Y = "resid",
+                                  G = "pca_id",
+                                  T = "time",
+                                  D = "is_treated",
+                                  dynamic = 18,
+                                  placebo = 12,
+                                  brep = 50,
+                                  parallel = TRUE)
   # No firstdiff_placebo option as in Stata
   # No weight option
   # Error if we use cluster option (cluster = pca_id_month)
@@ -108,7 +113,7 @@ est_dcdh <- function() {
            rel_time = str_replace(rel_time, "effect", "0"),
            rel_time = str_replace(rel_time, "dynamic_", ""),
            rel_time = as.integer(rel_time))
-  
+
 }
 
 ## 3. Imputation methods
@@ -142,10 +147,15 @@ est_gard <- function() {
     mutate(pca_id_month = paste(pca_id, month))
   mod_control <- feols(y ~ 0 | year + pca_id_month + pca_id[log_load],
                data = data_gard, subset =  ~ !is_treated, weights = ~ wgt)
+  
+  data_gard |>
+    mutate(resid = y - predict(mod_control, data_gard)) |>
+    select(pca_id, year, month, tr_time, rel_time, is_treated, y, resid) |>
+    filter(is_treated)
 
   ctb <- data_gard |>
-    mutate(yhat = predict(mod_control, data_gard)) |>
-    feols(yhat ~ i(rel_time, ref = c(-1)), data = _,
+    mutate(resid = y - predict(mod_control, data_gard)) |>
+    feols(resid ~ i(rel_time, ref = c(-1)), data = _,
           weights = ~ wgt, cluster = ~pca_modate) |>
     coeftable()
 
@@ -156,17 +166,16 @@ est_gard <- function() {
     add_row(rel_time = as.integer(-1), coef = 0, se = 0)
 }
 
-
 est_gard_error <- function() {
   ctb <- data |>
+    mutate(rel_time = na_if(rel_time, Inf)) |>
     did2s::did2s(yname = "y",
                  treatment = "is_treated",
                  cluster_var = "pca_modate",
                  first_stage = ~ 0 | year + pca_id^month + pca_id[log_load],
-                 second_stage = ~ i(rel_time, ref = c(-1)),
+                 second_stage = ~ i(rel_time, ref = c(-1, Inf)),
                  weights = "wgt",
                  bootstrap = TRUE,
-                 return_bootstrap = TRUE,
                  n_bootstraps = 3) |>
                  coeftable()
     # Error if bootstrap = FALSE https://github.com/kylebutts/did2s/issues/12
@@ -201,6 +210,7 @@ plot_did <- function(ctb, title) {
           panel.grid.minor = element_blank(),
           plot.title.position = "plot")
 }
+
 
 p1 <- est_naive() |> plot_did("Naive TWFE Event Study")
 p2 <- est_sunab() |> plot_did("Sun and Abraham")
@@ -260,3 +270,4 @@ tb_mbm |>
                    round(time) %% 60)) |>
   arrange(method) |>
   write_tsv(here("output/r/emp_application/3_estimation/bench_emp.tsv"))
+

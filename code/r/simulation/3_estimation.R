@@ -155,6 +155,21 @@ est_gard <- function() {
       add_row(rel_time = as.integer(-1), coef = 0, se = 0)
 }
 
+est_gard_alt <- function() {
+  mod <- feols(y ~ 0 | id + t, data = data, subset = ~ !is_treated)
+
+  ctb <- data |>
+      mutate(resid = y - predict(mod, data)) |>
+      feols(resid ~ i(rel_time, ref = c(-1)), data = _, cluster = "id") |>
+      coeftable()
+
+  tibble(name = rownames(ctb),
+          coef = ctb[,"Estimate"],
+          se = ctb[,"Std. Error"]) |>
+      separate(name, into = c(NA, "rel_time"), sep = "::", convert = TRUE) |>
+      add_row(rel_time = as.integer(-1), coef = 0, se = 0)
+}
+
 
 #-------------------------------------------
 # Plot & Benchmark
