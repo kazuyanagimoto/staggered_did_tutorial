@@ -7,8 +7,8 @@ load(here("output/r/emp_application/1_overview/data.rds"))
 data <- data |>
   filter(!is.na(y))
 
-model_tr_resid <- feglm(is_treated ~ 1 | year + pca_id^month + pca_id[log_load], data)
-model_y_resid <- feglm(y ~ 1 | year + pca_id^month + pca_id[log_load], data)
+model_tr_resid <- feols(is_treated ~ 1 | year + pca_id^month + pca_id[log_load], data)
+model_y_resid <- feols(y ~ 1 | year + pca_id^month + pca_id[log_load], data)
 
 df_jakiela <- data |>
   mutate(tr_resid = resid(model_tr_resid),

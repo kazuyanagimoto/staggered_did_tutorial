@@ -23,8 +23,8 @@ ggsave(here("output/r/simulation/2_diagnosis/bacon_decomp.png"), width = 6, heig
 
 # Jakiela Diagnosis (https://pjakiela.github.io/TWFE/)
 # Weight
-model_tr_resid <- feglm(is_treated ~ 1 | id + t, data)
-model_y_resid <- feglm(y ~ 1 | id + t, data)
+model_tr_resid <- feols(is_treated ~ 1 | id + t, data)
+model_y_resid <- feols(y ~ 1 | id + t, data)
 
 df_jakiela <- data |>
   mutate(tr_resid = resid(model_tr_resid),

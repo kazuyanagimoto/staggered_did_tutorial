@@ -1,3 +1,7 @@
+clear
+clear mata
+clear matrix
+set maxvar 10000
 use output/stata/emp_application/1_overview/cicala.dta, clear
 
 /***** III. Alternative Estimators *****/
@@ -140,8 +144,7 @@ event_plot, default_look stub_lag(tau#) stub_lead(pre#) together ///
 	title("Borusyak, Jaravel, Spiess", size(medsmall) margin(b=3)) ///
 	xlabel(-12(6)18) ///
 	name(cg4, replace)) 
-graph export output/stata/emp_application/3_estimation/cicala_g4.png, replace
-graph export output/stata/emp_application/3_estimation/cicala_g4.pdf, replace
+graph save output/stata/emp_application/3_estimation/cicala_g4, replace
 
 	
 * (3-B) Gardner *
@@ -158,8 +161,7 @@ event_plot, default_look stub_lag(lag#) stub_lead(lead#) together ///
     graph_opt(xtitle("Months since the event") ytitle("Estimates") ///
 	title("Gardner", size(medsmall) margin(b=3)) xlabel(-12(6)18) ///
 	name(cg5, replace)) 
-graph export output/stata/emp_application/3_estimation/cicala_g5.png, replace
-graph export output/stata/emp_application/3_estimation/cicala_g5.pdf, replace
+graph save output/stata/emp_application/3_estimation/cicala_g5, replace
 
 
 * Note : The following Stata package yeilds the same result.
