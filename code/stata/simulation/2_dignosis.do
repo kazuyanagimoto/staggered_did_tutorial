@@ -1,18 +1,6 @@
-use output/stata/simulation/1_gen_data/data.dta, clear
-
 /***** II. Diagnosis *****/
 
-*** II-A. Goodman-Bacon Decomposition ***
-xtset id time
-bacondecomp y treat, msymbols(oh t) /* Current version, aggregates early vs. late */
-graph export output/stata/simulation/2_diagnosis/bacon_decomp.pdf, replace
-graph export output/stata/simulation/2_diagnosis/bacon_decomp.png, replace
-
-* ddtiming y treat, i(id) t(time) savedata(nfd2) replace /* Old version, each timing comparison */
-* do "sim_bacondecomp.do"
-
-* Memo: Similar packages by Sun-Abraham and deCDH, but Jakiela diagnosis
-*       is more intuitive and easier to customize for quick diagnosis.
+use output/stata/simulation/1_gen_data/data.dta, clear
 
 *** II-B. Jakiela Diagnosis ***
 

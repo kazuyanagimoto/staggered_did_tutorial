@@ -92,12 +92,14 @@ est_wdrg <- function() {
 # (2-A) Callaway-Sant'Anna
 
 est_clsa <- function() {
-   mod <- did::att_gt(yname = "y",
-                      tname = "t",
-                      idname = "id",
-                      gname = "tr_time",
-                      control_group = "notyettreated",
-                      data = data) |> aggte(type = "dynamic")
+   mod <- att_gt(yname = "y",
+                 tname = "t",
+                 idname = "id",
+                 gname = "tr_time",
+                 control_group = "notyettreated",
+                 data = data) |>
+          aggte(type = "dynamic")
+
    tibble(rel_time = mod$egt,
           coef = mod$att.egt,
           se = mod$se.egt)
@@ -106,11 +108,15 @@ est_clsa <- function() {
 
 # (2-B) de Chaisemartin and D'Haultfoeuille
 
-est_dcdh <- function() {
-  mod <- DIDmultiplegt::did_multiplegt(df = data,
-                                       Y = "y", G = "id", T = "t", D = "is_treated",
-                                       dynamic = 5, placebo = 5, brep = 100,
-                                       cluster = "id", parallel = TRUE)
+est_dcdh <- function(run_parallel = TRUE) {
+
+  # pl = TRUE is not supported for Windows
+  run_parallel <- if_else(Sys.info()["sysname"] == "Windows", FALSE, run_parallel)
+
+  mod <- did_multiplegt(df = data,
+                        Y = "y", G = "id", T = "t", D = "is_treated",
+                        dynamic = 5, placebo = 5, brep = 100,
+                        cluster = "id", parallel = run_parallel)
   ests <- mod[grepl("^placebo_|^effect|^dynamic_", names(mod))]
   tibble(rel_time = names(ests),
        coef = as.numeric(ests),
@@ -131,12 +137,12 @@ est_dcdh <- function() {
 est_bjs <- function() {
   mod <- data |>
           rename(dep_var = y) |> # BUG: We cannot use "y" as "yname"
-          didimputation::did_imputation(yname = "dep_var",
-                                       gname = "tr_time",
-                                       tname = "t",
-                                       idname = "id",
-                                       horizon = TRUE,
-                                       pretrends = -5:-1)
+          did_imputation(yname = "dep_var",
+                         gname = "tr_time",
+                         tname = "t",
+                         idname = "id",
+                         horizon = TRUE,
+                         pretrends = -5:-1)
   tibble(rel_time = as.integer(mod$term),
          coef = mod$estimate,
          se = mod$std.error)
@@ -229,7 +235,7 @@ mbm <- microbenchmark(
 
 mbm_dcdh <- microbenchmark(
   dcdh = est_dcdh(),
-  times = 10
+  times = 1
 )
 
 tb_mbm <- summary(mbm) |>

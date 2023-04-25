@@ -39,7 +39,6 @@ vignettes/*.pdf
 .Renviron
 
 # data
-data/*.dta
 output/stata/**/*.dta
 output/r/emp_application/1_overview/data.rds
 

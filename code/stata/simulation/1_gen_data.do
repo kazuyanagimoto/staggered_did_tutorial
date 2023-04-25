@@ -1,3 +1,10 @@
+************************************************
+***   Staggered DID: Problems & Solutions    ***
+***   Part I. Basics using Simulated Data    ***
+***   Written by Yoshifumi Konishi           *** 
+***   Date: 2023.3.14                        ***
+************************************************ 
+
 /***** I. Generating Data *****/
 
 *** Case 2. Heterogeneous, Dynamic Effect ***

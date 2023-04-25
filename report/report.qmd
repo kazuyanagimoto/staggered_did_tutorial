@@ -143,23 +143,40 @@ library(gt)
 
 **Simulation**
 ```{r}
-bench_sim <- read_tsv(here("output/r/simulation/3_estimation/bench_sim.tsv"),
+bench_sim_stata <- read_tsv(here("output/stata/simulation/3_estimation/bench_sim.tsv"),
+                      col_types = "cci")
+bench_sim_r <- read_tsv(here("output/r/simulation/3_estimation/bench_sim.tsv"),
                       col_types = "cci")
 
-bench_sim |>
+bench_sim_stata |>
+  left_join(bench_sim_r, by = "method", suffix = c("_stata", "_r")) |>
   gt(rowname_col = "method") |>
-  cols_label(.list = list(time = "mm:ss:mmm", num_eval = "Num. Evaluation"))
+  cols_label(.list = list(time_stata = "Time (mm:ss:mmm)",
+                          num_eval_stata = "Num. Evaluation",
+                          time_r = "Time (mm:ss:mmm)",
+                          num_eval_r = "Num. Evaluation")) |>
+  tab_spanner(label = md("**Stata**"), columns = c("time_stata", "num_eval_stata")) |>
+  tab_spanner(label = md("**R**"), columns = c("time_r", "num_eval_r"))
 ```
 
 
 **Application**
 ```{r}
-bench_emp <- read_tsv(here("output/r/emp_application/3_estimation/bench_emp.tsv"),
+bench_emp_stata <- read_tsv(here("output/stata/emp_application/3_estimation/bench_emp.tsv"),
                       show_col_types = FALSE)
 
-bench_emp |>
+bench_emp_r <- read_tsv(here("output/r/emp_application/3_estimation/bench_emp.tsv"),
+                      show_col_types = FALSE)
+
+bench_emp_stata |>
+  left_join(bench_emp_r, by = "method", suffix = c("_stata", "_r")) |>
   gt(rowname_col = "method") |>
-  cols_label(.list = list(time = "hh:mm:ss", num_eval = "Num. Evaluation"))
+  cols_label(.list = list(time_stata = "Time (mm:ss:mmm)",
+                          num_eval_stata = "Num. Evaluation",
+                          time_r = "Time (mm:ss:mmm)",
+                          num_eval_r = "Num. Evaluation")) |>
+  tab_spanner(label = md("**Stata**"), columns = c("time_stata", "num_eval_stata")) |>
+  tab_spanner(label = md("**R**"), columns = c("time_r", "num_eval_r"))
 ```
 
 

@@ -1,10 +1,10 @@
+/***** III. Alternative Estimators *****/
+
 clear
 clear mata
 clear matrix
 set maxvar 10000
 use output/stata/emp_application/1_overview/cicala.dta, clear
-
-/***** III. Alternative Estimators *****/
 
 * Define relative time *
 
@@ -69,6 +69,7 @@ qui reg y i.year i.pca_id##i.month i.pca_id#c.log_load ///
 	if treat == 0, nocons /* weighting does not matter here */
 predict ycs, residual
 
+/* COMMENT OUT ONLY IF YOUR COMPUTER HAS 64GB OR LARGER RAM
 timer on 2
 csdid ycs, time(time) gvar(tr_time) agg(event) ///
     wboot(reps(50)) rseed(1) cluster(pca_modate) 
@@ -84,21 +85,6 @@ event_plot, default_look stub_lag(Tp#) stub_lead(Tm#) together ///
 	xlabel(-12(6)18) name(cg2, replace)) 
 graph save output/stata/emp_application/3_estimation/cicala_g2, replace
 
-/*
-timer on 2
-csdid ycs, time(time) gvar(tr_time) agg(event) ///
-    wboot(reps(50)) rseed(1) long replace 
-* Memo 1: Drop ivar() to allow for multiple obs within a panel.
-* Memo 2: Use wgt as covariate to weight obs.
-timer off 2
-estat event, estore(cs)
-
-event_plot cs, default_look stub_lag(Tp#) stub_lead(Tm#) together ///
-	trimlead(12) trimlag(18) ///
-	graph_opt(xtitle("Months since the event") ytitle("Estimates")  ///
-	title("Callaway and Sant'Anna", size(medsmall) margin(b=3)) ///
-	xlabel(-12(6)18) name(cg2, replace)) 
-graph save output/stata/emp_application/3_estimation/cicala_g2, replace
 */
 
 * (2-B) de Chaisemartin and D'Haultfoeuille *

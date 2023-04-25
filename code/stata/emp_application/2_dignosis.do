@@ -1,6 +1,6 @@
-use output/stata/emp_application/1_overview/cicala.dta, clear
-
 /***** II. Diagnosis *****/
+
+use output/stata/emp_application/1_overview/cicala.dta, clear
 
 *** II-A. Goodman-Bacon Decomposition ***
 

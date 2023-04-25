@@ -50,7 +50,14 @@ est_sunab <- function() {
 
 # (2-A) Callaway-Sant'Anna
 
-est_clsa <- function() {
+est_clsa <- function(run_parallel = TRUE, num_cores = parallel::detectCores()) {
+   
+  # pl = TRUE is not supported for Windows
+  if (Sys.info()["sysname"] == "Windows") {
+    run_parallel <- FALSE
+    num_cores <- 1
+  }
+  
   # make sure to code "never treated group" = 0
   data_ca <- data |>
     mutate(tr_time = replace(tr_time, is.na(tr_time), 0),
@@ -71,8 +78,8 @@ est_clsa <- function() {
            control_group = "nevertreated",
            bstrap = TRUE,
            biters = 50,
-           pl = TRUE,
-           cores = parallel::detectCores(),
+           pl = run_parallel,
+           cores = num_cores,
            data = _) |>
     aggte(type = "dynamic", na.rm = TRUE)
 
@@ -84,7 +91,11 @@ est_clsa <- function() {
 
 # (2-B) de Chaisemartin and D'Haultfoeuille
 
-est_dcdh <- function() {
+est_dcdh <- function(run_parallel = TRUE) {
+
+  # pl = TRUE is not supported for Windows
+  run_parallel <- if_else(Sys.info()["sysname"] == "Windows", FALSE, run_parallel)
+
   # Absorb FEs and time-varying Covariates a la Caetano et al. (2022)
   data_dcdh <- data |> mutate(pca_id_month = paste(pca_id, month))
   mod <- feols(y ~ 0 | year + pca_id_month + pca_id[log_load],
@@ -92,17 +103,18 @@ est_dcdh <- function() {
 
   mod <- data_dcdh |>
     mutate(resid = y - predict(mod, data_dcdh)) |>
-    DIDmultiplegt::did_multiplegt(Y = "resid",
-                                  G = "pca_id",
-                                  T = "time",
-                                  D = "is_treated",
-                                  dynamic = 18,
-                                  placebo = 12,
-                                  brep = 50,
-                                  parallel = TRUE)
+    did_multiplegt(Y = "resid",
+                   G = "pca_id",
+                   T = "time",
+                   D = "is_treated",
+                   dynamic = 18,
+                   placebo = 12,
+                   brep = 50,
+                   parallel = run_parallel)
   # No firstdiff_placebo option as in Stata
   # No weight option
   # Error if we use cluster option (cluster = pca_id_month)
+  # parallel = TRUE is not supported for Windows
 
   ests <- mod[grepl("^placebo_|^effect|^dynamic_", names(mod))]
 
@@ -124,15 +136,15 @@ est_bjs <- function() {
   mod <- data |>
     rename(dep_var = y) |> # BUG: We cannot use "y" as "yname"
     mutate(pca_id_month = paste(pca_id, month)) |>
-    didimputation::did_imputation(yname = "dep_var",
-                                  gname = "tr_time",
-                                  tname = "time",
-                                  idname = "pca_id",
-                                  first_stage = ~ 0 | year + month + pca_id_month, # BUG: log_load is not recognized
-                                  wname = "wgt",
-                                  horizon = TRUE,
-                                  pretrends = -12:-1,
-                                  cluster_var = "pca_modate")
+    did_imputation(yname = "dep_var",
+                   gname = "tr_time",
+                   tname = "time",
+                   idname = "pca_id",
+                   first_stage = ~ 0 | year + month + pca_id_month, # BUG: log_load is not recognized
+                   wname = "wgt",
+                   horizon = TRUE,
+                   pretrends = -12:-1,
+                   cluster_var = "pca_modate")
 
   tibble(rel_time = as.integer(mod$term),
          coef = mod$estimate,
@@ -158,28 +170,6 @@ est_gard <- function() {
     feols(resid ~ i(rel_time, ref = c(-1)), data = _,
           weights = ~ wgt, cluster = ~pca_modate) |>
     coeftable()
-
-  tibble(name = rownames(ctb),
-         coef = ctb[,"Estimate"],
-         se = ctb[,"Std. Error"]) |>
-    separate(name, into = c(NA, "rel_time"), sep = "::", convert = TRUE) |>
-    add_row(rel_time = as.integer(-1), coef = 0, se = 0)
-}
-
-est_gard_error <- function() {
-  ctb <- data |>
-    mutate(rel_time = na_if(rel_time, Inf)) |>
-    did2s::did2s(yname = "y",
-                 treatment = "is_treated",
-                 cluster_var = "pca_modate",
-                 first_stage = ~ 0 | year + pca_id^month + pca_id[log_load],
-                 second_stage = ~ i(rel_time, ref = c(-1, Inf)),
-                 weights = "wgt",
-                 bootstrap = TRUE,
-                 n_bootstraps = 3) |>
-                 coeftable()
-    # Error if bootstrap = FALSE https://github.com/kylebutts/did2s/issues/12
-    # But bootstrap = TRUE does not work, neither
 
   tibble(name = rownames(ctb),
          coef = ctb[,"Estimate"],
@@ -270,4 +260,3 @@ tb_mbm |>
                    round(time) %% 60)) |>
   arrange(method) |>
   write_tsv(here("output/r/emp_application/3_estimation/bench_emp.tsv"))
-

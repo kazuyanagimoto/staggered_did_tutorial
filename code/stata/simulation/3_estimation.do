@@ -1,6 +1,6 @@
-use output/stata/simulation/1_gen_data/data.dta, clear
-
 /***** III. Alternative Estimators *****/
+
+use output/stata/simulation/1_gen_data/data.dta, clear
 
 gen rel_time = time - tr_time
 sum tr_time
