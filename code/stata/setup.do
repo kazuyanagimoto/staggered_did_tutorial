@@ -24,11 +24,4 @@ ssc install did2s, replace /* Gardner */
 
 global projDir = "PATH/TO/YOUR/DIRECTORY"
 
-if "`c(username)'" == "kazuharu" {
-  global projDir = "\\wsl.localhost\Ubuntu\home\kazuharu\github\staggered_did_tutorial"  
-}
-if "`c(username)'" == "umetanihayato" {
-  global projDir = "/Users/umetanihayato/git/staggered_did_tutorial"
-}
-
 cd "$projDir"

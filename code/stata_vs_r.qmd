@@ -1,0 +1,168 @@
+---
+title: "StataとRの比較"
+author: Kazuharu Yanagimoto
+date: today
+execute:
+    echo: false
+    warning: false
+    message: false
+format:
+    html:
+        self-contained: true
+---
+
+```{r}
+library(here)
+library(tidyverse)
+library(gt)
+```
+
+# Replication
+
+## Simulation
+
+### 1. Generating Data
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/simulation/1_gen_data/baker22_sim6.png)
+
+![R](/output/r/simulation/1_gen_data/baker22_sim6.png)
+:::
+
+### 2. Diagnosis
+
+#### @goodman-bacon2021
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/simulation/2_diagnosis/bacon_decomp.png)
+
+![R](/output/r/simulation/2_diagnosis/bacon_decomp.png)
+:::
+
+#### @jakiela2021
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/simulation/2_diagnosis/jakiela_weight.png)
+
+![R](/output/r/simulation/2_diagnosis/jakiela_weight.png)
+:::
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/simulation/2_diagnosis/jakiela_resid.png)
+
+![R](/output/r/simulation/2_diagnosis/jakiela_resid.png)
+:::
+
+### 3. Estimation Results
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/simulation/3_estimation/alt_est1.png)
+
+![R](/output/r/simulation/3_estimation/alt_est1.png)
+:::
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/simulation/3_estimation/alt_est2.png)
+
+![R](/output/r/simulation/3_estimation/alt_est2.png)
+:::
+
+## Application: Replication of @cicala2022
+
+### 1. Data Overview
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/emp_application/1_overview/dispatch_timing.png)
+
+![R](/output/r/emp_application/1_overview/treate_timing.png)
+:::
+
+### 2. Diagnosis
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/emp_application/2_dignosis/jdiag_1.png)
+
+![R](/output/r/emp_application/2_diagnosis/jakiela_weight.png)
+:::
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/emp_application/2_dignosis/jdiag_2.png)
+
+![R](/output/r/emp_application/2_diagnosis/jakiela_resid.png)
+:::
+
+### 3. Estimation Results
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/emp_application/3_estimation/alt_est1_slides.png)
+
+![R](/output/r/emp_application/3_estimation/alt_est1.png)
+:::
+
+::: {layout-ncol="2"}
+![Stata](/output/stata/emp_application/3_estimation/alt_est2_slides.png)
+
+![R](/output/r/emp_application/3_estimation/alt_est2.png)
+:::
+
+# Discussion
+
+## Benchmark
+
+**Simulation**
+
+```{r}
+bench_sim_stata <- read_tsv(here("output/stata/simulation/3_estimation/bench_sim.tsv"),
+                      col_types = "cci")
+bench_sim_r <- read_tsv(here("output/r/simulation/3_estimation/bench_sim.tsv"),
+                      col_types = "cci")
+
+bench_sim_stata |>
+  left_join(bench_sim_r, by = "method", suffix = c("_stata", "_r")) |>
+  select(method, time_stata, time_r) |>
+  gt(rowname_col = "method") |>
+  cols_label(.list = list(time_stata = md("**Stata**<br>(mm:ss:mmm)"),
+                          time_r = md("**R**<br>(mm:ss:mmm)"))) |>
+  tab_footnote(
+    footnote = "Bootstrap with 100 times. Single Thread.",
+    locations = cells_stub(rows = c("de Chaisemartin and D'Haultfoeuille"))
+  )
+```
+
+**Application**
+
+```{r}
+bench_emp_stata <- read_tsv(here("output/stata/emp_application/3_estimation/bench_emp.tsv"),
+                      show_col_types = FALSE)
+
+bench_emp_r <- read_tsv(here("output/r/emp_application/3_estimation/bench_emp.tsv"),
+                      show_col_types = FALSE)
+
+bench_emp_stata |>
+  left_join(bench_emp_r, by = "method", suffix = c("_stata", "_r")) |>
+    select(method, time_stata, time_r) |>
+  gt(rowname_col = "method") |>
+  cols_label(.list = list(time_stata = md("**Stata**<br>(hh:mm:ss)"),
+                          time_r = md("**R**<br>(hh:mm:ss)"))) |>
+  tab_footnote(
+    footnote = "Bootstrap with 50 times. Single Thread.",
+    locations = cells_stub(rows = c("Callway and Sant'Anna", "de Chaisemartin and D'Haultfoeuille"))
+  )
+```
+
+-   固定効果入りの回帰分析のためのパッケージである Stata の`reghdfe` と R の `fixest` では数倍 \~ 数十倍の速度差がある. [fixest:Benchmark](https://lrberge.github.io/fixest/)
+-   TWFEベースの手法 (@sun2021) や Imputationの手法 (@borusyak2022, @gardner2022) は `fixest` を利用できるため, Stataと比べてかなり早い
+-   @callaway2021 や @dechaisemartin2020 はマルチスレッドで計算できるため, 実践的には数倍早くなる可能性がある. ただし, RのWindows版ではマルチスレッドに対応していなかった.
+
+## Stata ↔ R
+
+
+### @dechaisemartin2022
+
+-   Rパッケージはここ３年メンテナンスされてなく, Stataのパッケージに追いつけていない模様. [kylebutts/did2s#19](https://github.com/kylebutts/did2s/issues/19)
+-   Stata の `did_multiplegt` の `firstdiff_placebo` と `weight` オプションがない. また, Cicalaのreplicationで `cluster=pca_modate` を指定するとエラーが出る.
+
+### @gardner2022
+
+-   `did2s::did2s` はLarge Matrixに対してAnalytical Standard Errorを計算できない. これはパッケージの仕様らしい. [kylebutts/did2s#12](https://github.com/kylebutts/did2s/issues/12)
+-   ただし, `bootstrap=True` にしてもバグのようなエラーが出る. `feols` を用いて Stata と同じ実装をした.
