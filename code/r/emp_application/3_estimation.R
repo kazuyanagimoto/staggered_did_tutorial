@@ -219,44 +219,49 @@ ggsave(here("output/r/emp_application/3_estimation/alt_est2.png"), width = 6, he
 
 ## Benchmark
 
-mbm <- microbenchmark(
-  sunab = est_sunab(),
-  bjs = est_bjs(),
-  gard = est_gard(),
-  times = 1
-)
+run_benchmark <- FALSE
 
-mbm_clsa <- microbenchmark(
-  clsa = est_clsa(),
-  times = 1
-)
+if (run_benchmark) {
+  mbm <- microbenchmark(
+    sunab = est_sunab(),
+    bjs = est_bjs(),
+    gard = est_gard(),
+    times = 1
+  )
+  
+  mbm_clsa <- microbenchmark(
+    clsa = est_clsa(),
+    times = 1
+  )
+  
+  mbm_dcdh <- microbenchmark(
+    dcdh = est_dcdh(),
+    times = 1
+  )
+  
+  tb_mbm <- summary(mbm) |>
+    dplyr::select(method = expr, time = median, num_eval = neval)
+  
+  tb_mbm_clsa <- summary(mbm_clsa) |>
+    dplyr::select(method = expr, time = median, num_eval = neval)
+  
+  tb_mbm_dcdh <- summary(mbm_dcdh) |>
+    dplyr::select(method = expr, time = median, num_eval = neval)
+  
+  tb_mbm |>
+    bind_rows(tb_mbm_clsa) |>
+    bind_rows(tb_mbm_dcdh) |>
+    mutate(method = recode_factor(method,
+                                  sunab = "Sun and Abraham",
+                                  clsa = "Callway and Sant'Anna",
+                                  dcdh = "de Chaisemartin and D'Haultfoeuille",
+                                  bjs = "Borusyak, Jaravel, Spiess",
+                                  gard = "Gardner"),
+           time = sprintf("%02.f:%02.f:%02.f",
+                          time %/% 3600,
+                          (time %% 3600) %/% 60,
+                          round(time) %% 60)) |>
+    arrange(method) |>
+    write_tsv(here("output/r/emp_application/3_estimation/bench_emp.tsv"))
+}
 
-mbm_dcdh <- microbenchmark(
-  dcdh = est_dcdh(),
-  times = 1
-)
-
-tb_mbm <- summary(mbm) |>
-  dplyr::select(method = expr, time = median, num_eval = neval)
-
-tb_mbm_clsa <- summary(mbm_clsa) |>
-  dplyr::select(method = expr, time = median, num_eval = neval)
-
-tb_mbm_dcdh <- summary(mbm_dcdh) |>
-  dplyr::select(method = expr, time = median, num_eval = neval)
-
-tb_mbm |>
-  bind_rows(tb_mbm_clsa) |>
-  bind_rows(tb_mbm_dcdh) |>
-  mutate(method = recode_factor(method,
-    sunab = "Sun and Abraham",
-    clsa = "Callway and Sant'Anna",
-    dcdh = "de Chaisemartin and D'Haultfoeuille",
-    bjs = "Borusyak, Jaravel, Spiess",
-    gard = "Gardner"),
-    time = sprintf("%02.f:%02.f:%02.f",
-                   time %/% 3600,
-                   (time %% 3600) %/% 60,
-                   round(time) %% 60)) |>
-  arrange(method) |>
-  write_tsv(here("output/r/emp_application/3_estimation/bench_emp.tsv"))

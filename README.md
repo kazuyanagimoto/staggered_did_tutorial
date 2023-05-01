@@ -29,7 +29,7 @@ We strongly recommend you run it only if your computer has 64GB or larger RAM.
 1. Run `renv::restore()` in the R console to install packages
 1. Run `simulation/1_gen_data.R`-`simulation/3_estimation.R`
 1. Run `emp_application/1_overview.R`-`emp_application/3_estimation.R`
-
+1. By default, benchmarks are not calculated. Set `run_benchmark <- TRUE` for it.
 
 For docker-users, between the step 1 and 2, implement either
 
