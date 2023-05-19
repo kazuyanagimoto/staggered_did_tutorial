@@ -8,6 +8,7 @@ ssc install estout, replace
 
 *** (2) Decomposition packages ***
 ssc install bacondecomp, replace /* Goodman-Bacon decomp */
+net install ddtiming, from(https://tgoldring.com/code/) /* Old Goodman-Bacon decomp */
 ssc install eventstudyweights, replace /* Sun-Abraham decomp */
 ssc install twowayfeweights, replace /* deCDH decomp */
 

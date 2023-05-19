@@ -4,23 +4,20 @@ use output/stata/emp_application/1_overview/cicala.dta, clear
 
 *** II-A. Goodman-Bacon Decomposition ***
 
-xtset pca_id time
-set matsize 10000
-bacondecomp y treat year, ddetail gropt(msymbols(oh t))
+* xtset pca_id date
+* bacondecomp y treat, ddetail gropt(msymbols(oh t))
 * ddtiming y treat, i(id) t(time) savedata(nfd2) replace
 
 * Memo: Goodman-Bacon does not allow for multiple obs. within a panel.
 *       e.g., if time var (= treatment level) is monthly, observations cannot be
 *       hourly or daily. Similarly, if id var (= treatment level) is state, 
-*       observations cannot be at the household level.
-
-twowayfeweights y pca_id time treat
+*       observations cannot be at the household level. 
 
 *** II-B. Jakiela Diagnosis ***
 
 *** prep weight & residualized outcomes ***
 qui: reghdfe treat, a(year i.pca_id##i.month i.pca_id#c.log_load) res
-predict tr_resid, resid
+predict tr_resid if e(sample), resid
 gen tr_resid2 = tr_resid^2
 egen denom = total(tr_resid2)
 gen w = tr_resid/denom
@@ -57,7 +54,7 @@ tw (scatter y_resid tr_resid if treat == 0, m(oh) mc(maroon%40)) ///
 	(lfit y_resid tr_resid if treat == 1, lc(dkgreen)) ///
 	, xtitle("D residual") ytitle("Y residual") xlabel(-.5(.5).5) ///
 	legend(order(1 "Treatment observations" 2 "Comparison observations")) ///
-	legend(ring(0) pos(1) col(1) region(style(off))) 
+	legend(ring(0) pos(1) col(1) region(style(off)))  
 graph export output/stata/emp_application/2_dignosis/jdiag_2.png, replace
 
 * The following yield the same results *

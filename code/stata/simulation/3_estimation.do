@@ -11,7 +11,7 @@ forvalues l = 0/27 {
 forvalues l = 1/27 {
 	gen lead`l' = (rel_time == -`l')
 }
-replace lead1 = 0 // normalize first_treat = -1 to be zero
+replace lead1 = 0 // normalize first_treat = -1 to be zero	
 save "output/stata/simulation/3_estimation/sim2_full.dta", replace
 
 *** 0. Benchmark TWFE ***
@@ -20,12 +20,12 @@ use "output/stata/simulation/3_estimation/sim2_full.dta", clear
 reghdfe y lead* lag* , a(id time) cluster(id)
 * Note 1: lead1 coef is set to zero. This will drop lags 18-27.
 * Note 2: Runnin reghdfe y lag* lead* instead will drop leads 19-27 and lag 27,
-*         and it will get us unbiased estimates since it "happens" to drop wrong comparisons.
+*         and it will get us unbiased estimates since it "happens" to drop wrong comparisons. 
 
 event_plot, default_look stub_lag(lag#) stub_lead(lead#) together ///
     graph_opt(xtitle("Periods since the event") ytitle("Estimates") ///
 	title("Naive TWFE Event Study", size(medsmall) margin(b=3)) xlabel(-5(1)5) ///
-	name(g0, replace)) trimlead(5) trimlag(5)
+	name(g0, replace)) trimlead(5) trimlag(5) 
 addplot: (scatteri 0 -5 0 0 2 5, xlabel(-5(1)5) recast(line) lp(dash) lc(maroon))
 
 
@@ -56,11 +56,11 @@ reghdfe y lag* lead* , a(id time) cluster(id)
 event_plot, default_look stub_lag(lag#) stub_lead(lead#) together trimlead(5) trimlag(5) ///
     graph_opt(xtitle("Periods since the event") ytitle("Estimates") xlabel(-5(1)5) ///
 	title("Stacked Regression", size(medsmall) margin(b=3)) xlabel(-5(1)5) ///
-	name(g1, replace))
+	name(g1, replace)) 
 	addplot: (scatteri 0 0 2 5, xlabel(-5(1)5) recast(line) lp(dash) lc(maroon))
-
+	
 * Note 1: "stackedev" package requires never-treated units.
-*         Hence cannot be used in this example b/c all units eventually receive treatment.
+*         Hence cannot be used in this example b/c all units eventually receive treatment. 
 * Note 2: Runnding reghdfe y lead* lag* removes "correct" comparions due to multicoliniarity.
 
 * (1-B) Sun and Abraham *
@@ -69,14 +69,14 @@ use "output/stata/simulation/3_estimation/sim2_full.dta", clear
 
 timer clear
 timer on 1
-eventstudyinteract y lead* lag*, vce(cluster i) absorb(id time) cohort(tr_time) ///
+eventstudyinteract y lead* lag*, vce(cluster i) absorb(id time) cohort(tr_time) /// 
 	control_cohort(lastcohort)
 timer off 1
 
 event_plot e(b_iw)#e(V_iw), default_look stub_lag(lag#) stub_lead(lead#) ///
 	together trimlead(5) trimlag(5) ///
 	graph_opt(xtitle("Periods since the event") ytitle("Estimates") xlabel(-5(1)5) ///
-	title("Sun and Abraham", size(medsmall) margin(b=3)) name(g2, replace))
+	title("Sun and Abraham", size(medsmall) margin(b=3)) name(g2, replace))  
 addplot: (scatteri 0 0 2 5, xlabel(-5(1)5) recast(line) lp(dash) lc(maroon))
 
 /*
@@ -107,13 +107,17 @@ forvalues g = 1/2 {
 
 reghdfe y lag*_* lead*_*, a(time group) cluster(id)
 
+* Note: The following estimate the same.
+*       ssc install jwdid, replace      
+*       jwdid y, ivar(id) tvar(time) gvar(tr_time)
+
 /*
-lincom (lag0 + lag0_g2*(2/3) + lag0_g3*(1/3))
-lincom (lag1 + lag1_g2*(2/3) + lag1_g3*(1/3))
-lincom (lag2 + lag2_g2*(2/3) + lag2_g3*(1/3))
-lincom (lag3 + lag3_g2*(2/3) + lag3_g3*(1/3))
-lincom (lag4 + lag4_g2*(2/3) + lag4_g3*(1/3))
-lincom (lag5 + lag5_g2*(2/3) + lag5_g3*(1/3))
+lincom (lag0_g1*(1/2) + lag0_g2*(1/2))
+lincom (lag1_g1*(1/2) + lag1_g2*(1/2))
+lincom (lag2_g1*(1/2) + lag2_g2*(1/2))
+lincom (lag3_g1*(1/2) + lag3_g2*(1/2))
+lincom (lag4_g1*(1/2) + lag4_g2*(1/2))
+lincom (lag5_g1*(1/2) + lag5_g2*(1/2))
 */
 
 gen grid = _n in 1/11
@@ -155,8 +159,8 @@ use "output/stata/simulation/3_estimation/sim2_full.dta", clear
 
 timer on 2
 csdid y, ivar(id) time(time) gvar(tr_time) notyet ///
-    agg(event) wboot driwp
-	* Memo: Default uses "uniform" SEs to account for multiple testing.
+    agg(event) wboot driwp 
+	* Memo: Default uses "uniform" SEs to account for multiple testing. 
 timer off 2
 estat event, estore(cs)
 
@@ -164,7 +168,7 @@ event_plot cs, default_look stub_lag(Tp#) stub_lead(Tm#) together ///
 	trimlead(5) trimlag(5) ///
 	graph_opt(xtitle("Periods since the event") ytitle("Estimates")  ///
 	title("Callaway and Sant'Anna", size(medsmall) margin(b=3)) xlabel(-5(1)5) ///
-	name(g4, replace))
+	name(g4, replace)) 
 addplot: (scatteri 0 0 2 5, xlabel(-5(1)5) recast(line) lp(dash) lc(maroon))
 
 * (2-B) de Chaisemartin and D'Haultfoeuille *
@@ -172,7 +176,7 @@ use "output/stata/simulation/3_estimation/sim2_full.dta", clear
 
 timer on 3
 did_multiplegt y id time treat, robust_dynamic ///
-	dynamic(5) placebo(5) breps(100) cluster(id)
+	dynamic(5) placebo(5) breps(100) cluster(id) 
 timer off 3
 
 event_plot e(estimates)#e(variances), default_look ///
@@ -180,13 +184,23 @@ event_plot e(estimates)#e(variances), default_look ///
 	trimlead(5) trimlag(5) ///
 	graph_opt(xtitle("Periods since the event") ytitle("Estimates") ///
 	title("de Chaisemartin and D'Haultfoeuille", size(medsmall) margin(b=3)) ///
-	xlabel(-5(1)5) name(g5, replace))
+	xlabel(-5(1)5) name(g5, replace))  
 addplot: (scatteri 0 0 2 5, xlabel(-5(1)5) recast(line) lp(dash) lc(maroon))
 
 /*
 twowayfeweights y id time treat, type(feTR) path("dCDH_decomp.dta")
+* twowayfeweights y id time treat, type(feS) path("dCDH_decomp.dta")
 use "dCDH_decomp.dta", clear
-tw (scatter weight Time_TWFE)
+egen group = group(weight) 
+tw (scatter weight Time_TWFE if group == 1, mc(maroon*0.5)) ///
+(scatter weight Time_TWFE if group == 2, mc(green*0.1)) ///
+(scatter weight Time_TWFE if group == 3, mc(green*0.3)) ///
+(scatter weight Time_TWFE if group == 4, mc(green*0.5)) ///
+(scatter weight Time_TWFE if group == 5, mc(green*0.7)) ///
+(scatter weight Time_TWFE if group == 6, mc(green)), ///
+yline(0, lc(grey) lw(thin)) xline(1998 2007, lc(red*0.5) lp(thin)) ///
+xtitle(Time, size(medsmall)) ytitle(Weights, size(medsmall)) ///
+title(TWFE Regression Weight to Each Obs, size(medsmall) margin(b=2)) legend(off)
 */
 
 *** 3. Imputation methods ***
@@ -201,7 +215,7 @@ timer off 4
 event_plot, default_look stub_lag(tau#) stub_lead(pre#) together trimlead(5) trimlag(5) ///
     graph_opt(xtitle("Periods since the event") ytitle("Estimates") ///
 	title("Borusyak, Jaravel, Spiess", size(medsmall) margin(b=3))  ///
-	xlabel(-5(1)5) name(g6, replace))
+	xlabel(-5(1)5) name(g6, replace)) 
 addplot: (scatteri 0 0 2 5, xlabel(-5(1)5) recast(line) lp(dash) lc(maroon))
 
 * (3-B) Gardner *
@@ -210,7 +224,7 @@ use "output/stata/simulation/3_estimation/sim2_full.dta", clear
 timer on 5
 reg y i.id i.time if treat == 0, nocons
 predict yhat, residual
-reg yhat lead* lag* if d89 != 1 | time < 2007, nocons cluster(id) // drop negative weight group
+reg yhat lead* lag* if d89 != 1 | time < 2007, nocons cluster(id) 
 timer off 5
 
 event_plot, default_look stub_lag(lag#) stub_lead(lead#) together trimlead(5) trimlag(5) ///
@@ -219,9 +233,13 @@ event_plot, default_look stub_lag(lag#) stub_lead(lead#) together trimlead(5) tr
 	name(g7, replace))
 addplot: (scatteri 0 0 2 5, xlabel(-5(1)5) recast(line) lp(dash) lc(maroon))
 
-* Note : The following Stata package yeilds the same result.
-*        did2s y, first_stage(i.id i.time) second_stage(lead* lag*) ///
-*              treatment(treat) cluster(id)
+* Note 1: For Gardner's estimator to be unbiased, we need to drop obs that  
+*         have no comparison group. So we get unbiased estimates if we add 
+*         "drop if d89 == 1 & time >= 2007" 
+* Note 2: The following Stata package yields the same result.
+*         drop if d89 == 1 & time >= 2007
+*         did2s y, first_stage(i.id i.time) second_stage(lead* lag*) ///
+*           treatment(treat) cluster(id)
 
 *** Combine All Results ****
 forvalues i = 1/5 {

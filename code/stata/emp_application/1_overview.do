@@ -2,7 +2,7 @@
 ***   Staggered DID: Problems & Solutions    ***
 ***   Part II. Empirical Application         ***
 ***   Written by Yoshifumi Konishi           *** 
-***   Date: 2023.3.15                        ***
+***   Date: 2023.4.30                        ***
 ************************************************     
 
 /************ Empirical Settings ***************
@@ -51,9 +51,9 @@ table treat, command(sum ideal_trade_surplus)
 sort time
 format time %tm
 tw line mkt_frac time, ytitle("Fraction of Market Dispatch", margin(r=2)) ///
-    xlabel(468 "99" 480 "00" 492 "01" 504 "02" 516 "03" ///
-    528 "04" 540 "05" 552 "06" 564 "07" 576 "08" 588 "09" ///
-    600 "10" 612 "11" 624 "12" 636 "13") xtitle(" ") 
+	xlabel(468 "99" 480 "00" 492 "01" 504 "02" 516 "03" ///
+	528 "04" 540 "05" 552 "06" 564 "07" 576 "08" 588 "09" ///
+	600 "10" 612 "11" 624 "12" 636 "13") xtitle(" ") 
 graph export output/stata/emp_application/1_overview/dispatch_timing.pdf, replace
 graph export output/stata/emp_application/1_overview/dispatch_timing.png, replace
 

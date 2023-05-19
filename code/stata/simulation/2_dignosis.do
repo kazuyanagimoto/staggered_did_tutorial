@@ -2,6 +2,18 @@
 
 use output/stata/simulation/1_gen_data/data.dta, clear
 
+/***** II. Diagnosis *****/
+
+*** II-A. Goodman-Bacon Decomposition ***
+
+xtset id time
+bacondecomp y treat, msymbols(oh t) /* Current version, aggregates early vs. late */
+* ddtiming y treat, i(id) t(time) savedata(nfd2) replace /* Old version, each timing comparison */
+* do "sim_bacondecomp.do"
+
+* Memo: Similar packages by Sun-Abraham and deCDH, but Jakiela diagnosis
+*       is more intuitive and easier to customize for quick diagnosis. 
+
 *** II-B. Jakiela Diagnosis ***
 
 *** prep weight & residualized outcomes ***
@@ -30,12 +42,14 @@ qui: reg y i.time i.id
 predict y_resid, resid
 
 tw (scatter y_resid tr_resid if treat == 0, m(oh) mc(maroon%40)) ///
-(scatter y_resid tr_resid if treat == 1, m(sh)  mc(dkgreen%40)) ///
-(lfit y_resid tr_resid if treat == 0, lc(maroon)) ///
-(lfit y_resid tr_resid if treat == 1, lc(dkgreen)) ///
-, xtitle("D residual") ytitle("Y residual") ///
-legend(order(1 "Treatment observations" 2 "Comparison observations")) ///
-legend(ring(0) pos(1) col(1) region(style(off))) xsize(8.5)
+	(scatter y_resid tr_resid if treat == 1, m(sh)  mc(dkgreen%40)) ///
+	(lfit y_resid tr_resid if treat == 0, lc(maroon)) ///
+	(lfit y_resid tr_resid if treat == 1, lc(dkgreen)) ///
+	, xtitle("D residual") ytitle("Y residual") ///
+	title("Case 2. Heterogeneous/Dynamic Effect" ///
+	"(Simulation 6 in Baker {it:et al.})", size(medsmall) margin(b=3))  ///
+	legend(order(1 "Treatment observations" 2 "Comparison observations")) ///
+	legend(ring(0) pos(1) col(1) region(style(off))) xsize(8.5)
 
 graph export output/stata/simulation/2_diagnosis/jakiela_resid.pdf, replace
 graph export output/stata/simulation/2_diagnosis/jakiela_resid.png, replace

@@ -1,10 +1,12 @@
 # Staggered DiD Tutorial
 
+本Githubサイトは、2023年5月28日に日本経済学会春季大会にて開催されたチュートリアル・セッション（共催：日本学術会議 数量的経済・政策分析分科会）「DIDの計量経済手法の近年の展開」のサポートサイトとしてスライド資料（講義編・演習基礎編・演習応用編）、Stataコード、Rコードを提供しています．
+
 ## Tutorials
 
-- [発表資料スライド](https://github.com/kazuyanagimoto/staggered_did_tutorial/blob/main/docs/slides/%E6%97%A5%E7%B5%8C%E5%AD%A6%E4%BC%9A%E3%83%81%E3%83%A5%E3%83%BC%E3%83%88%E3%83%AA%E3%82%A2%E3%83%AB_%E7%99%BA%E8%A1%A8%E8%B3%87%E6%96%99.pdf)
-- [Stata演習スライド](https://github.com/kazuyanagimoto/staggered_did_tutorial/blob/main/docs/slides/%E6%97%A5%E7%B5%8C%E5%AD%A6%E4%BC%9A%E3%83%81%E3%83%A5%E3%83%BC%E3%83%88%E3%83%AA%E3%82%A2%E3%83%AB_Stata%E6%BC%94%E7%BF%92.pdf)
-- [Comparison between R and Stata](https://github.com/kazuyanagimoto/staggered_did_tutorial/blob/main/docs/report/report.html)
+- [発表資料スライド](https://kazuyanagimoto.com/staggered_did_tutorial/slides/SDID_Tutorial_Main.pdf)
+- [Stata演習スライド](https://kazuyanagimoto.com/staggered_did_tutoria/slides/SDID_Tutorial_Stata.pdf)
+- [Comparison between R and Stata](https://kazuyanagimoto.com/staggered_did_tutoial/code/stata_vs_r.html)
 
 ## Replication (Stata & R)
 
@@ -36,17 +38,13 @@ For docker-users, between the step 1 and 2, implement either
 - **Rstudio:** `docker-compose up --build` and open `localhost:8787` in Browser
 - **VSCode:** Dev Containers "Rebuild and Reopen in Container"
 
-
-
 ## License and Credits
 
-Copyright (c) 2023 Yoshifumi Konishi, Kazuharu Yanagimoto, and Hayato Umetani.
+スライド資料およびStataコードは小西祥文（慶應義塾大学）が作成，Rコードは研究補助として柳本和春さん(CEMFI)と梅谷隼人さん(神戸大学)に作成頂きました．教育・研究目的での利用は引用の上, 商用利用の場合は私（小西祥文）の許諾を得てからご利用下さい．
 
-Tutorial slides and Stata codes are written by Konishi, and R codes are written by Yanagimoto and Umetani.
-Source codes and data are under the Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) License, see [LICENSE](https://github.com/kazuyanagimoto/staggered_did_tutorial/blob/main/LICENSE).
-Note that the original hourly-level data of `data/cicala_aer_2022_ready.dta` are provided by
-Cicala (2022) under the CC BY-NC 4.0 License.
-The data is converted to a daily-level and cleaned by Konishi.
+Tutorial slides and Stata codes are written by Yoshifumi Konishi (Keio Univ.), and R codes are written by Kazuharu Yanagimoto (CEMFI) and Hayato Umetani (Kobe Univ.). Source codes and data are under the Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) License, see [LICENSE](https://github.com/kazuyanagimoto/staggered_did_tutorial/blob/main/LICENSE).
+
+Note: The data set used in Stata/R demonstrations (`cicala_aer_2022_ready.dta`) comes from Cicala (AER, 2022) under the CC BY-NC 4.0 License. The original data are hourly observations but are converted to daily-level observations by Yoshifumi Konishi.
 
 ## References
 

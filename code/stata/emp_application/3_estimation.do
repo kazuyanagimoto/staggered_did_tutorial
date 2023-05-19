@@ -19,7 +19,7 @@ forvalues l = 0/24 {
 forvalues l = 1/24 {
 	gen lead`l' = (rel_time == -`l')
 }
-replace lead1 = 0 // normalize first_treat = -1 to be zero	
+replace lead1 = 0 // normalize first_treat = -1 to be zero		
 save "output/stata/emp_application/3_estimation/cicala_alt.dta", replace
 
 *** 0. Benchmark TWFE ***
@@ -34,7 +34,7 @@ event_plot, default_look stub_lag(lag#) stub_lead(lead#) together ///
 	trimlead(12) trimlag(18) ///
     graph_opt(xtitle("Months since the event") ytitle("Estimates") ///
 	title("Naive TWFE Event Study", size(medsmall) margin(b=3)) ///
-	xlabel(-12(3)18) name(cg0, replace)) 
+	xlabel(-12(3)18) ylabel(-.5(.5)1.5) name(cg0, replace)) 
 graph save output/stata/emp_application/3_estimation/cicala_g0, replace
 
 *** 1. Fully-saturated TWFE ***
@@ -53,7 +53,7 @@ event_plot e(b_iw)#e(V_iw), default_look stub_lag(lag#) stub_lead(lead#) ///
 	together trimlead(12) trimlag(18) ///
 	graph_opt(xtitle("Months since the event") ytitle("Estimates") ///
 	title("Sun and Abraham", size(medsmall) margin(b=3)) xlabel(-12(3)18) ///
-	name(cg1, replace))
+	ylabel(-.5(.5)1.5) name(cg1, replace))
 graph save output/stata/emp_application/3_estimation/cicala_g1, replace
 
 *** 2. Rolling methods ***
@@ -69,7 +69,9 @@ qui reg y i.year i.pca_id##i.month i.pca_id#c.log_load ///
 	if treat == 0, nocons /* weighting does not matter here */
 predict ycs, residual
 
-/* COMMENT OUT ONLY IF YOUR COMPUTER HAS 64GB OR LARGER RAM
+* IMPORTANT NOTE: We advise you NOT to run the following CS estimator UNLESS
+*                 your computer has 65GB memory or larger. 
+
 timer on 2
 csdid ycs, time(time) gvar(tr_time) agg(event) ///
     wboot(reps(50)) rseed(1) cluster(pca_modate) 
@@ -83,9 +85,6 @@ event_plot, default_look stub_lag(Tp#) stub_lead(Tm#) together ///
 	graph_opt(xtitle("Months since the event") ytitle("Estimates")  ///
 	title("Callaway and Sant'Anna", size(medsmall) margin(b=3)) ///
 	xlabel(-12(6)18) name(cg2, replace)) 
-graph save output/stata/emp_application/3_estimation/cicala_g2, replace
-
-*/
 
 * (2-B) de Chaisemartin and D'Haultfoeuille *
 use "output/stata/emp_application/3_estimation/cicala_alt.dta", clear
@@ -123,12 +122,14 @@ did_imputation y pca_id time tr_time [aweight=wgt], ///
 	* for some observations b/c some absorbed variables/FEs 
 	* are collinear in the D==0 subsample but in the full sample.
 timer off 4
+gen bjs_sample = (e(sample) == 1)
+save "output/stata/emp_application/3_estimation/cicala_alt.dta", replace
 
 event_plot, default_look stub_lag(tau#) stub_lead(pre#) together ///
 	trimlead(12) trimlag(18) ///
     graph_opt(xtitle("Months since the event") ytitle("Estimates") ///
 	title("Borusyak, Jaravel, Spiess", size(medsmall) margin(b=3)) ///
-	xlabel(-12(6)18) ///
+	xlabel(-12(6)18) ylabel(-.5(.5)1.5) ///
 	name(cg4, replace)) 
 graph save output/stata/emp_application/3_estimation/cicala_g4, replace
 
@@ -137,8 +138,11 @@ graph save output/stata/emp_application/3_estimation/cicala_g4, replace
 use "output/stata/emp_application/3_estimation/cicala_alt.dta", clear
 
 timer on 5
-qui reg y i.year i.pca_id##i.month i.pca_id#c.log_load [aweight=wgt] if treat == 0, nocons
+qui: 
+reg y i.year i.pca_id##i.month i.pca_id#c.log_load [aweight=wgt] if treat == 0, nocons
 predict yhat, residual
+* drop if tr_resid < 0 & tr_time < time
+keep if bjs_sample == 1
 reg yhat lead* lag* [aweight=wgt], nocons cluster(pca_modate)
 timer off 5
 
@@ -162,5 +166,3 @@ forvalues i = 0/5 {
 }
 graph combine cg0 cg1 cg2 cg3, rows(3) xsize(5.5)
 graph combine cg0 cg1 cg4 cg5, rows(3) xsize(5.5)
-
-
