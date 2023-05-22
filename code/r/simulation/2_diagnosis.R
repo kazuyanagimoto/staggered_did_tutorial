@@ -28,13 +28,17 @@ model_y_resid <- feols(y ~ 1 | id + t, data)
 
 df_jakiela <- data |>
   mutate(tr_resid = resid(model_tr_resid),
-         y_resid = resid(model_y_resid))
+         tr_resid2 = tr_resid^2,
+         denom = sum(tr_resid2),
+         w = tr_resid/denom,
+         y_resid = resid(model_y_resid)) |>
+  mutate(wm = mean(w), .by = c(group, t))
 
 df_jakiela |>
   mutate(label_wgt = case_when(
     t < tr_time ~ "Comparison observation",
-    t >= tr_time & tr_resid > 0 ~ "Treatment observations - positive weight",
-    t >= tr_time & tr_resid < 0 ~ "Treatment observations - negative weight"),
+    t >= tr_time & wm > 0 ~ "Treatment observations - positive weight",
+    t >= tr_time & wm < 0 ~ "Treatment observations - negative weight"),
     label_wgt = factor(label_wgt, levels = c(
       "Comparison observation",
       "Treatment observations - positive weight",

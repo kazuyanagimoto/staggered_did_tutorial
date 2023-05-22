@@ -10,8 +10,8 @@ use output/stata/emp_application/1_overview/cicala.dta, clear
 
 * Memo: Goodman-Bacon does not allow for multiple obs. within a panel.
 *       e.g., if time var (= treatment level) is monthly, observations cannot be
-*       hourly or daily. Similarly, if id var (= treatment level) is state, 
-*       observations cannot be at the household level. 
+*       hourly or daily. Similarly, if id var (= treatment level) is state,
+*       observations cannot be at the household level.
 
 *** II-B. Jakiela Diagnosis ***
 
@@ -21,14 +21,17 @@ predict tr_resid if e(sample), resid
 gen tr_resid2 = tr_resid^2
 egen denom = total(tr_resid2)
 gen w = tr_resid/denom
+bysort group time: egen wm = mean(w)
+* Note: Confirm distribution of weights over time is not uniform across groups
+*       by running : scatter w time if group == `i' & time >= tr_time
 
 *** Diagnosis (1): Weight ***
 
 tw (scatter group time if time < tr_time, ///
 	msymbol(s) mlcolor(gs10) mfcolor(gs14)) ///
-(scatter group time if time >= tr_time & tr_resid > 0, ///
+(scatter group time if time >= tr_time & wm > 0, ///
 	msymbol(s) mcolor(dkgreen*0.5)) ///
-(scatter group time if time >= tr_time & tr_resid < 0, ///
+(scatter group time if time >= tr_time & wm < 0, ///
 	msymbol(s) mcolor(maroon)), ///
 	aspect(0.5) plotregion(style(none)) ///
 	ylabel(1 "1" 2 "2" 3 "3" 4 "4" 5 "5" 6 "6"7 "7" 8 "8" 9 "9" 10 "10" ///
@@ -43,8 +46,8 @@ tw (scatter group time if time < tr_time, ///
 	600 "10" 612 "11" 624 "12" 636 "13", labsize(small))
 graph export output/stata/emp_application/2_dignosis/jdiag_1.png, replace
 
-table group, stat(count treat) stat(mean treat) stat(sd treat) 
-		
+table group, stat(count treat) stat(mean treat) stat(sd treat)
+
 *** Diagnosis (2): Heterogeneity ***
 qui: reghdfe y, a(year i.pca_id##i.month i.pca_id#c.log_load) res
 predict y_resid, resid
@@ -54,7 +57,7 @@ tw (scatter y_resid tr_resid if treat == 0, m(oh) mc(maroon%40)) ///
 	(lfit y_resid tr_resid if treat == 1, lc(dkgreen)) ///
 	, xtitle("D residual") ytitle("Y residual") xlabel(-.5(.5).5) ///
 	legend(order(1 "Treatment observations" 2 "Comparison observations")) ///
-	legend(ring(0) pos(1) col(1) region(style(off)))  
+	legend(ring(0) pos(1) col(1) region(style(off)))
 graph export output/stata/emp_application/2_dignosis/jdiag_2.png, replace
 
 * The following yield the same results *

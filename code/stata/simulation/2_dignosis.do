@@ -12,7 +12,7 @@ bacondecomp y treat, msymbols(oh t) /* Current version, aggregates early vs. lat
 * do "sim_bacondecomp.do"
 
 * Memo: Similar packages by Sun-Abraham and deCDH, but Jakiela diagnosis
-*       is more intuitive and easier to customize for quick diagnosis. 
+*       is more intuitive and easier to customize for quick diagnosis.
 
 *** II-B. Jakiela Diagnosis ***
 
@@ -22,6 +22,9 @@ predict tr_resid, resid
 gen tr_resid2 = tr_resid^2
 egen denom = total(tr_resid2)
 gen w = tr_resid/denom
+bysort group time: egen wm = mean(w)
+* Note: Confirm distribution of weights over time is not uniform across groups
+*       by running : scatter w time if group == `i' & time >= tr_time
 
 *** Diagnosis (1): Weight ***
 tw (scatter group time if time < tr_time, ms(s) mlc(gs10) mfc(gs14) msize(vlarge)) ///
