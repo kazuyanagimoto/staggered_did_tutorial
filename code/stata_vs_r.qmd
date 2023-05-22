@@ -6,6 +6,7 @@ execute:
     echo: false
     warning: false
     message: false
+fig-cap-location: top
 format:
     html:
         self-contained: true
@@ -157,7 +158,7 @@ bench_emp_stata |>
 ## Stata ↔ R
 
 
-### @dechaisemartin2022
+### @dechaisemartin2020
 
 -   Rパッケージはここ３年メンテナンスされてなく, Stataのパッケージに追いつけていない模様. [kylebutts/did2s#19](https://github.com/kylebutts/did2s/issues/19)
 -   Stata の `did_multiplegt` の `firstdiff_placebo` と `weight` オプションがない. また, Cicalaのreplicationで `cluster=pca_modate` を指定するとエラーが出る.

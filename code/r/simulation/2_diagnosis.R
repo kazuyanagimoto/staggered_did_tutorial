@@ -12,7 +12,7 @@ df_bacon <- bacon(y ~ is_treated, data, "id", "t")
 ggplot(df_bacon) +
   aes(x = weight, y = estimate, shape = type, color = type) +
   geom_point(size = 2) +
-  geom_hline(yintercept = 0) + 
+  geom_hline(yintercept = 0) +
   theme_bw() +
   labs(x = "Weight", y = "Estimate", shape = NULL, color = NULL) + 
   theme(panel.grid = element_blank(),
@@ -28,17 +28,15 @@ model_y_resid <- feols(y ~ 1 | id + t, data)
 
 df_jakiela <- data |>
   mutate(tr_resid = resid(model_tr_resid),
-         tr_resid2 = tr_resid^2,
-         denom = sum(tr_resid2),
-         w = tr_resid/denom,
-         y_resid = resid(model_y_resid)) |>
-  mutate(wm = mean(w), .by = c(group, t))
+         w = tr_resid / sum(tr_resid^2),
+         y_resid = resid(model_y_resid))
 
 df_jakiela |>
+  summarize(w = mean(w), .by = c(t, tr_time, group)) |>
   mutate(label_wgt = case_when(
     t < tr_time ~ "Comparison observation",
-    t >= tr_time & wm > 0 ~ "Treatment observations - positive weight",
-    t >= tr_time & wm < 0 ~ "Treatment observations - negative weight"),
+    t >= tr_time & w > 0 ~ "Treatment observations - positive weight",
+    t >= tr_time & w < 0 ~ "Treatment observations - negative weight"),
     label_wgt = factor(label_wgt, levels = c(
       "Comparison observation",
       "Treatment observations - positive weight",

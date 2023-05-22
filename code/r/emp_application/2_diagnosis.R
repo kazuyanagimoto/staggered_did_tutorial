@@ -10,20 +10,22 @@ data <- data |>
 model_tr_resid <- feols(is_treated ~ 1 | year + pca_id^month + pca_id[log_load], data)
 model_y_resid <- feols(y ~ 1 | year + pca_id^month + pca_id[log_load], data)
 
+data |> glimpse()
+
 df_jakiela <- data |>
   mutate(tr_resid = resid(model_tr_resid),
-         tr_resid2 = tr_resid^2,
-         denom = sum(tr_resid2),
-         w = tr_resid/denom,
-         y_resid = resid(model_y_resid)) |>
-  mutate(wm = mean(w), .by = c(group, time))
+         w = tr_resid / sum(tr_resid^2),
+         y_resid = resid(model_y_resid),
+         group = dense_rank(tr_time))
+
 # Weight
 
 df_jakiela |>
+  summarize(w = mean(w), .by = c(time, group, tr_time)) |>
   mutate(label_wgt = case_when(
     time < tr_time ~ "Comparison observation",
-    time >= tr_time & wm > 0 ~ "Treatment observations - positive weight",
-    time >= tr_time & wm < 0 ~ "Treatment observations - negative weight"),
+    time >= tr_time & w > 0 ~ "Treatment observations - positive weight",
+    time >= tr_time & w < 0 ~ "Treatment observations - negative weight"),
     label_wgt = factor(label_wgt, levels = c(
       "Comparison observation",
       "Treatment observations - positive weight",
