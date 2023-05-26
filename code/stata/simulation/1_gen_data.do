@@ -2,8 +2,8 @@
 ***   Staggered DID: Problems & Solutions    ***
 ***   Part I. Basics using Simulated Data    ***
 ***   Written by Yoshifumi Konishi           *** 
-***   Date: 2023.4.30                        ***
-************************************************ 
+***   Date: 2023.5.22                        ***
+************************************************
 
 /***** I. Generating Data *****/
 
@@ -68,7 +68,7 @@ region(lp(blank)) symxs(*0.5) symys(*0.5) size(medsmall) ///
 ring(0) pos(11) rows(3)) xlabel(1980(10)2015) ///
 xline(1989.5 1998.5 2007.5, lp(dash) lc(black) lw(thin)) ///
 title("Case 2. Heterogeneous/Dynamic Effect""(Simulation 6 in Baker {it:et al.})", ///
-size(medsmall) margin(b=3)) yscale(r(0 20)) ylabel(-5(5)20) xtitle(" ") name(g2, replace) 
+size(medsmall) margin(b=3)) yscale(r(0 20)) ylabel(-5(5)20) xtitle(" ") name(g2, replace)
 
 graph export output/stata/simulation/1_gen_data/baker22_sim6.pdf, replace
 graph export output/stata/simulation/1_gen_data/baker22_sim6.png, replace

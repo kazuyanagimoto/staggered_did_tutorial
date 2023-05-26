@@ -2,7 +2,7 @@
 ***   Staggered DID: Problems & Solutions    ***
 ***   Part II. Empirical Application         ***
 ***   Written by Yoshifumi Konishi           *** 
-***   Date: 2023.4.30                        ***
+***   Date: 2023.5.22                        ***
 ************************************************     
 
 /************ Empirical Settings ***************

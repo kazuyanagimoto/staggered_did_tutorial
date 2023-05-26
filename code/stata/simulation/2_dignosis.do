@@ -12,7 +12,7 @@ bacondecomp y treat, msymbols(oh t) /* Current version, aggregates early vs. lat
 * do "sim_bacondecomp.do"
 
 * Memo: Similar packages by Sun-Abraham and deCDH, but Jakiela diagnosis
-*       is more intuitive and easier to customize for quick diagnosis.
+*       is more intuitive and easier to customize for quick diagnosis. 
 
 *** II-B. Jakiela Diagnosis ***
 
@@ -28,15 +28,14 @@ bysort group time: egen wm = mean(w)
 
 *** Diagnosis (1): Weight ***
 tw (scatter group time if time < tr_time, ms(s) mlc(gs10) mfc(gs14) msize(vlarge)) ///
-(scatter group time if time >= tr_time & tr_resid > 0, ms(s) mc(dkgreen*0.5) msize(vlarge)) ///
-(scatter group time if time >= tr_time & tr_resid < 0, ms(s) mc(maroon) msize(vlarge)), ///
+(scatter group time if time >= tr_time & wm > 0, ms(s) mc(dkgreen*0.5) msize(vlarge)) ///
+(scatter group time if time >= tr_time & wm < 0, ms(s) mc(maroon) msize(vlarge)), ///
 	aspect(0.1) plotregion(style(none)) ///
 	ylabel(1 "Treat in 1989" 2 "Treat in 1998" 3 "Treat in 2007" , ///
 		angle(0) noticks labsize(small)) ytitle(" " ) yscale(lstyle(none)) ///
 		legend(order(3 2 1) label(3 "Treatment observations - negative weight") ///
 		label(2 "Treatment observations - positive weight") ///
 		label(1 "Comparison observations") size(small) col(1)) xtitle(" ") xlabel(1980(5)2015)
-
 graph export output/stata/simulation/2_diagnosis/jakiela_weight.pdf, replace
 graph export output/stata/simulation/2_diagnosis/jakiela_weight.png, replace
 

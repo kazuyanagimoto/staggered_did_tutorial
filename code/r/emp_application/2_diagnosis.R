@@ -10,8 +10,6 @@ data <- data |>
 model_tr_resid <- feols(is_treated ~ 1 | year + pca_id^month + pca_id[log_load], data)
 model_y_resid <- feols(y ~ 1 | year + pca_id^month + pca_id[log_load], data)
 
-data |> glimpse()
-
 df_jakiela <- data |>
   mutate(tr_resid = resid(model_tr_resid),
          w = tr_resid / sum(tr_resid^2),
