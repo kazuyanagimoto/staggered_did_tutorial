@@ -5,8 +5,8 @@
 ## Tutorials
 
 - [発表資料スライド](https://kazuyanagimoto.com/staggered_did_tutorial/slides/SDID_Tutorial_Main.pdf)
-- [Stata演習スライド](https://kazuyanagimoto.com/staggered_did_tutoria/slides/SDID_Tutorial_Stata.pdf)
-- [Comparison between R and Stata](https://kazuyanagimoto.com/staggered_did_tutoial/code/stata_vs_r.html)
+- [Stata演習スライド](https://kazuyanagimoto.com/staggered_did_tutorial/slides/SDID_Tutorial_Stata.pdf)
+- [Comparison between R and Stata](https://kazuyanagimoto.com/staggered_did_tutorial/code/stata_vs_r.html)
 
 ## Replication (Stata & R)
 
